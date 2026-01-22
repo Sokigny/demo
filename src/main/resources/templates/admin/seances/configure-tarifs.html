@@ -1,0 +1,333 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Configuration des Tarifs - Admin</title>
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+    />
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css"
+    />
+    <link rel="stylesheet" th:href="@{/css/admin.css}" />
+    <style>
+      .step-indicator {
+        display: flex;
+        justify-content: center;
+        margin-bottom: 30px;
+      }
+      .step {
+        display: flex;
+        align-items: center;
+        padding: 10px 20px;
+        border-radius: 30px;
+        background: #2a2a2a;
+        margin: 0 10px;
+      }
+      .step.active {
+        background: var(--netflix-red);
+      }
+      .step.completed {
+        background: #28a745;
+      }
+      .step i {
+        margin-right: 8px;
+      }
+      .arrow {
+        color: #666;
+        font-size: 24px;
+        margin: 0 10px;
+      }
+      .tarif-card {
+        background: #d9d9d9;
+        border: 1px solid #cfc7c7;
+        border-radius: 8px;
+        padding: 20px;
+        margin-bottom: 15px;
+        transition: all 0.3s;
+      }
+      .tarif-card:hover {
+        border-color: var(--netflix-red);
+        transform: translateY(-2px);
+      }
+      .tarif-icon {
+        font-size: 32px;
+        margin-bottom: 10px;
+      }
+      .default-badge {
+        background: #6c757d59;
+        color: #000;
+        padding: 2px 8px;
+        border-radius: 12px;
+        font-size: 11px;
+        font-weight: bold;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="">
+      <!-- Sidebar -->
+      <nav class="sidebar">
+        <div class="sidebar-header">
+          <div class="sidebar-brand">
+            <i class="bi bi-film"></i>
+            <span>Cinema Admin</span>
+          </div>
+          <button class="sidebar-toggle">
+            <i class="bi bi-list"></i>
+          </button>
+        </div>
+        <nav>
+          <a th:href="@{/admin/dashboard}" class="nav-link">
+            <i class="bi bi-speedometer2"></i>
+            <span>Dashboard</span>
+          </a>
+          <a th:href="@{/admin/films}" class="nav-link">
+            <i class="bi bi-camera-reels"></i>
+            <span>Films</span>
+          </a>
+          <a th:href="@{/admin/salles}" class="nav-link">
+            <i class="bi bi-building"></i>
+            <span>Salles</span>
+          </a>
+          <a th:href="@{/admin/seances}" class="nav-link active">
+            <i class="bi bi-calendar-event"></i>
+            <span>Séances</span>
+          </a>
+        </nav>
+      </nav>
+
+      <!-- Main Content -->
+      <main class="main-content">
+        <div class="container-fluid">
+          <!-- Step Indicator -->
+          <div class="step-indicator">
+            <div class="step completed">
+              <i class="bi bi-check-circle"></i>
+              Informations
+            </div>
+            <span class="arrow">→</span>
+            <div class="step active">
+              <i class="bi bi-2-circle"></i>
+              Tarifs
+            </div>
+          </div>
+
+          <div class="d-flex justify-content-between align-items-center mb-4">
+            <h1>
+              <i class="bi bi-currency-dollar text-netflix-red"></i>
+              Configuration des Tarifs - Étape 2
+            </h1>
+          </div>
+
+          <!-- Info séance -->
+          <div class="card mb-4">
+            <div class="card-body">
+              <h6 class="mb-3">
+                <i class="bi bi-info-circle text-netflix-red"></i> Informations
+                de la Séance
+              </h6>
+              <div class="row">
+                <div class="col-md-3">
+                  <strong>Film :</strong>
+                  <p th:text="${seance.film.titre}">Film Title</p>
+                </div>
+                <div class="col-md-3">
+                  <strong>Salle :</strong>
+                  <p th:text="${seance.salle.nom}">Salle A</p>
+                </div>
+                <div class="col-md-3">
+                  <strong>Date :</strong>
+                  <p
+                    th:text="${#temporals.format(seance.dateSeance, 'dd/MM/yyyy')}"
+                  >
+                    01/01/2024
+                  </p>
+                </div>
+                <div class="col-md-3">
+                  <strong>Horaire :</strong>
+                  <p>
+                    <span
+                      th:text="${#temporals.format(seance.heureDebut, 'HH:mm')}"
+                      >14:00</span
+                    >
+                    -
+                    <span
+                      th:text="${#temporals.format(seance.heureFin, 'HH:mm')}"
+                      >16:00</span
+                    >
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Messages Flash -->
+          <div
+            th:if="${error}"
+            class="alert alert-danger alert-dismissible fade show"
+            role="alert"
+          >
+            <i class="bi bi-exclamation-triangle"></i>
+            <span th:text="${error}"></span>
+            <button
+              type="button"
+              class="btn-close"
+              data-bs-dismiss="alert"
+            ></button>
+          </div>
+
+          <!-- Formulaire des Tarifs -->
+          <div class="card">
+            <div class="card-body">
+              <h6 class="mb-4">
+                <i class="bi bi-ticket-perforated text-netflix-red"></i> Définir
+                les Tarifs par Type de Siège
+              </h6>
+              <p class="text-muted mb-4">
+                <i class="bi bi-lightbulb"></i> Des tarifs par défaut sont
+                suggérés. Vous pouvez les modifier selon vos besoins.
+              </p>
+
+              <form
+                th:action="@{/admin/seances/{id}/configure-tarifs(id=${seance.id})}"
+                method="post"
+                id="tarifsForm"
+              >
+                <div class="row">
+                  <div
+                    th:each="type, iterStat : ${typesSieges}"
+                    class="col-md-4 mb-3"
+                  >
+                    <div class="tarif-card">
+                      <div class="text-center">
+                        <div class="tarif-icon">
+                          <i
+                            th:class="${type.nom.toLowerCase().contains('vip') ? 'bi bi-star-fill text-warning' : 
+                                                           type.nom.toLowerCase().contains('premium') ? 'bi bi-gem text-info' : 
+                                                           'bi bi-chair text-secondary'}"
+                          ></i>
+                        </div>
+                        <h6 th:text="${type.nom}">Type Siège</h6>
+                      </div>
+
+                      <div class="mt-3">
+                        <label class="form-label">
+                          Tarif *
+                          <span
+                            class="default-badge"
+                            th:if="${tarifsDefaut.containsKey(type.id)}"
+                          >
+                            Suggéré:
+                            <span th:text="${tarifsDefaut.get(type.id)}"
+                              >10 000</span
+                            >Ar
+                          </span>
+                        </label>
+                        <div class="input-group">
+                          <input
+                            type="number"
+                            name="montants"
+                            class="form-control tarif-input"
+                            th:value="${tarifsDefaut.get(type.id)}"
+                            min="1"
+                            step="1"
+                            required
+                          />
+                          <span class="input-group-text">Ar</span>
+                        </div>
+                        <input
+                          type="hidden"
+                          name="typeSiegeIds"
+                          th:value="${type.id}"
+                        />
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Validation Summary -->
+                <div
+                  class="alert alert-warning mt-3"
+                  id="validationWarning"
+                  style="display: none"
+                >
+                  <i class="bi bi-exclamation-triangle"></i>
+                  <span id="validationMessage"></span>
+                </div>
+
+                <!-- Boutons -->
+                <div class="d-flex justify-content-between mt-4">
+                  <a th:href="@{/admin/seances}" class="btn btn-secondary">
+                    <i class="bi bi-x-circle"></i> Annuler
+                  </a>
+                  <button type="submit" class="btn btn-netflix" id="submitBtn">
+                    <i class="bi bi-check-circle"></i> Enregistrer les Tarifs
+                  </button>
+                </div>
+              </form>
+            </div>
+          </div>
+        </div>
+      </main>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script th:src="@{/js/admin.js}"></script>
+    <script>
+      document.addEventListener("DOMContentLoaded", function () {
+        const form = document.getElementById("tarifsForm");
+        const tarifInputs = document.querySelectorAll(".tarif-input");
+        const submitBtn = document.getElementById("submitBtn");
+        const validationWarning = document.getElementById("validationWarning");
+        const validationMessage = document.getElementById("validationMessage");
+
+        // Validation en temps réel
+        function validateTarifs() {
+          let allValid = true;
+          let errorMessages = [];
+
+          tarifInputs.forEach((input) => {
+            const value = parseFloat(input.value);
+
+            if (isNaN(value) || value <= 0) {
+              allValid = false;
+              errorMessages.push("Tous les tarifs doivent être supérieurs à 0");
+            }
+          });
+
+          if (!allValid) {
+            validationWarning.style.display = "block";
+            validationMessage.textContent = errorMessages[0];
+            submitBtn.disabled = true;
+          } else {
+            validationWarning.style.display = "none";
+            submitBtn.disabled = false;
+          }
+
+          return allValid;
+        }
+
+        // Écouter les changements
+        tarifInputs.forEach((input) => {
+          input.addEventListener("input", validateTarifs);
+          input.addEventListener("change", validateTarifs);
+        });
+
+        // Validation à la soumission
+        form.addEventListener("submit", function (e) {
+          if (!validateTarifs()) {
+            e.preventDefault();
+            alert("Veuillez corriger les erreurs avant de continuer.");
+          }
+        });
+
+        // Validation initiale
+        validateTarifs();
+      });
+    </script>
+  </body>
+</html>

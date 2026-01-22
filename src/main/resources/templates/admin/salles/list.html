@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="fr" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gestion des Salles - Cinema Admin</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+    <link rel="stylesheet" th:href="@{/css/admin.css}">
+</head>
+<body>
+    <div class="">
+        <!-- Sidebar -->
+        <nav class="sidebar">
+            <div class="sidebar-header">
+                <div class="sidebar-brand">
+                    <i class="bi bi-film"></i>
+                    <span>Cinema Admin</span>
+                </div>
+                <button class="sidebar-toggle">
+                    <i class="bi bi-list"></i>
+                </button>
+            </div>
+            <nav>
+                <a th:href="@{/admin/dashboard}" class="nav-link">
+                    <i class="bi bi-speedometer2"></i>
+                    <span>Dashboard</span>
+                </a>
+                <a th:href="@{/admin/films}" class="nav-link">
+                    <i class="bi bi-camera-reels"></i>
+                    <span>Films</span>
+                </a>
+                <a th:href="@{/admin/salles}" class="nav-link active">
+                    <i class="bi bi-building"></i>
+                    <span>Salles</span>
+                </a>
+                <a th:href="@{/admin/seances}" class="nav-link">
+                    <i class="bi bi-calendar-event"></i>
+                    <span>Séances</span>
+                </a>
+            </nav>
+        </nav>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <div class="container-fluid">
+                <!-- Flash Messages -->
+                <div th:if="${success}" class="alert alert-success alert-dismissible fade show" role="alert">
+                    <i class="bi bi-check-circle me-2"></i>
+                    <span th:text="${success}"></span>
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+
+                <!-- Header -->
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <h1><i class="bi bi-building text-netflix-red"></i> Gestion des Salles</h1>
+                    <a th:href="@{/admin/salles/new}" class="btn btn-netflix">
+                        <i class="bi bi-plus-lg me-2"></i>Nouvelle Salle
+                    </a>
+                </div>
+
+                <!-- Salles Table -->
+                <div class="card">
+                    <div class="table-responsive">
+                        <table class="table">
+                            <thead>
+                                <tr>
+                                    <th width="5%">#</th>
+                                    <th width="20%">Nom</th>
+                                    <th width="25%">Cinéma</th>
+                                    <th width="15%" class="text-center">Capacité</th>
+                                    <th width="15%" class="text-center">Statut</th>
+                                    <th width="20%" class="text-end">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr th:each="salle : ${salles}">
+                                    <td th:text="${salle.id}">#</td>
+                                    <td>
+                                        <strong th:text="${salle.nom}">Salle 1</strong>
+                                    </td>
+                                    <td>
+                                        <i class="bi bi-building me-1"></i>
+                                        <span th:text="${salle.cinema.nom}">Cinema Name</span>
+                                    </td>
+                                    <td class="text-center">
+                                        <span class="badge bg-primary" th:if="${salle.capacite != null}">
+                                            <i class="bi bi-people-fill me-1"></i>
+                                            <span th:text="${salle.capacite}">0</span>
+                                        </span>
+                                        <span class="badge bg-secondary" th:unless="${salle.capacite != null}">
+                                            Non définie
+                                        </span>
+                                    </td>
+                                    <td class="text-center">
+                                        <span class="badge" 
+                                              th:classappend="${salle.actif != null && salle.actif ? 'bg-success' : (salle.actif != null ? 'bg-danger' : 'bg-secondary')}"
+                                              th:text="${salle.actif != null ? (salle.actif ? 'Active' : 'Inactive') : 'Non défini'}">
+                                            Active
+                                        </span>
+                                    </td>
+                                    <td class="text-end">
+                                        <div class="btn-group btn-group-sm" role="group">
+                                            <a th:href="@{/admin/salles/{id}/sieges(id=${salle.id})}" 
+                                               class="btn btn-outline-info"
+                                               title="Voir les sièges">
+                                                <i class="bi bi-grid-3x3"></i>
+                                            </a>
+                                            <a th:href="@{/admin/salles/edit/{id}(id=${salle.id})}" 
+                                               class="btn btn-outline-primary"
+                                               title="Modifier">
+                                                <i class="bi bi-pencil"></i>
+                                            </a>
+                                            <a th:href="@{/admin/salles/delete/{id}(id=${salle.id})}" 
+                                               class="btn btn-outline-danger"
+                                               title="Supprimer"
+                                               onclick="return confirm('Êtes-vous sûr de vouloir supprimer cette salle ?')">
+                                                <i class="bi bi-trash"></i>
+                                            </a>
+                                        </div>
+                                    </td>
+                                </tr>
+                                <tr th:if="${#lists.isEmpty(salles)}">
+                                    <td colspan="6" class="text-center py-5">
+                                        <i class="bi bi-inbox display-1 text-muted d-block mb-3"></i>
+                                        <h5 class="text-muted">Aucune salle pour le moment</h5>
+                                        <p class="text-muted">Commencez par ajouter votre première salle</p>
+                                        <a th:href="@{/admin/salles/new}" class="btn btn-netflix mt-3">
+                                            <i class="bi bi-plus-lg me-2"></i>Ajouter une Salle
+                                        </a>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script th:src="@{/js/admin.js}"></script>
+</body>
+</html>

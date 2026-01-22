@@ -1,0 +1,1132 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Séances - Cinéma</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #6366f1;
+            --primary-dark: #4f46e5;
+            --secondary: #f59e0b;
+            --success: #10b981;
+            --danger: #ef4444;
+            --bg-light: #f8fafc;
+            --bg-card: #ffffff;
+            --text-dark: #1e293b;
+            --text-muted: #64748b;
+            --border: #e2e8f0;
+            --shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+            --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: var(--bg-light);
+            color: var(--text-dark);
+            min-height: 100vh;
+        }
+
+        .navbar {
+            background: white;
+            box-shadow: var(--shadow);
+            padding: 1rem 2rem;
+        }
+
+        .navbar-brand {
+            font-weight: 700;
+            font-size: 1.5rem;
+            color: var(--primary);
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            text-decoration: none;
+        }
+
+        .navbar-brand i {
+            font-size: 1.8rem;
+        }
+
+        .container-main {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+
+        /* Search Card */
+        .search-card {
+            background: white;
+            border-radius: 16px;
+            padding: 1.5rem;
+            box-shadow: var(--shadow);
+            margin-bottom: 2rem;
+        }
+
+        .search-card h2 {
+            font-size: 1.25rem;
+            font-weight: 600;
+            margin-bottom: 1rem;
+            color: var(--text-dark);
+        }
+
+        .search-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+        }
+
+        .form-group label {
+            display: block;
+            font-size: 0.875rem;
+            font-weight: 500;
+            color: var(--text-muted);
+            margin-bottom: 0.5rem;
+        }
+
+        .form-group input,
+        .form-group select {
+            width: 100%;
+            padding: 0.75rem 1rem;
+            border: 2px solid var(--border);
+            border-radius: 10px;
+            font-size: 0.95rem;
+            transition: all 0.2s;
+            background: white;
+        }
+
+        .form-group input:focus,
+        .form-group select:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+        }
+
+        .btn-search {
+            background: var(--primary);
+            color: white;
+            border: none;
+            padding: 0.75rem 1.5rem;
+            border-radius: 10px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .btn-search:hover {
+            background: var(--primary-dark);
+            transform: translateY(-2px);
+        }
+
+        .btn-reset {
+            background: transparent;
+            color: var(--text-muted);
+            border: 2px solid var(--border);
+            padding: 0.75rem 1.5rem;
+            border-radius: 10px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .btn-reset:hover {
+            border-color: var(--text-muted);
+        }
+
+        /* Stats Bar */
+        .stats-bar {
+            display: flex;
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+            flex-wrap: wrap;
+        }
+
+        .stat-item {
+            background: white;
+            padding: 1rem 1.5rem;
+            border-radius: 12px;
+            box-shadow: var(--shadow);
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .stat-icon {
+            width: 48px;
+            height: 48px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+        }
+
+        .stat-icon.primary { background: rgba(99, 102, 241, 0.1); color: var(--primary); }
+        .stat-icon.success { background: rgba(16, 185, 129, 0.1); color: var(--success); }
+        .stat-icon.warning { background: rgba(245, 158, 11, 0.1); color: var(--secondary); }
+
+        .stat-info h4 {
+            font-size: 1.5rem;
+            font-weight: 700;
+            line-height: 1;
+        }
+
+        .stat-info p {
+            font-size: 0.875rem;
+            color: var(--text-muted);
+            margin: 0;
+        }
+
+        /* Timeline */
+        .timeline-section {
+            margin-bottom: 2rem;
+        }
+
+        .date-header {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            margin-bottom: 1rem;
+            padding-bottom: 0.5rem;
+            border-bottom: 2px solid var(--primary);
+        }
+
+        .date-badge {
+            background: var(--primary);
+            color: white;
+            padding: 0.5rem 1rem;
+            border-radius: 10px;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .date-count {
+            background: rgba(99, 102, 241, 0.1);
+            color: var(--primary);
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
+            font-size: 0.875rem;
+            font-weight: 500;
+        }
+
+        /* Seance Cards - New Design */
+        .seances-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+            gap: 1.5rem;
+        }
+
+        .seance-card {
+            background: white;
+            border-radius: 20px;
+            box-shadow: var(--shadow);
+            overflow: hidden;
+            transition: all 0.3s;
+        }
+
+        .seance-card:hover {
+            transform: translateY(-6px);
+            box-shadow: var(--shadow-lg);
+        }
+
+        /* Film Poster Section */
+        .film-poster {
+            position: relative;
+            height: 180px;
+            overflow: hidden;
+            background: linear-gradient(135deg, #1e1b4b, #312e81);
+        }
+
+        .poster-img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transition: transform 0.3s;
+        }
+
+        .seance-card:hover .poster-img {
+            transform: scale(1.05);
+        }
+
+        .poster-placeholder {
+            width: 100%;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: linear-gradient(135deg, #1e1b4b, #312e81);
+        }
+
+        .poster-placeholder i {
+            font-size: 4rem;
+            color: rgba(255,255,255,0.3);
+        }
+
+        .film-overlay {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            padding: 1rem;
+            background: linear-gradient(transparent, rgba(0,0,0,0.8));
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        .genre-badge {
+            background: var(--primary);
+            color: white;
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+
+        .duration-badge {
+            background: rgba(255,255,255,0.2);
+            color: white;
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            display: flex;
+            align-items: center;
+            gap: 0.25rem;
+        }
+
+        /* Card Content */
+        .card-content {
+            padding: 1.25rem;
+        }
+
+        .film-title-section {
+            margin-bottom: 1rem;
+        }
+
+        .film-title-section h3 {
+            font-size: 1.15rem;
+            font-weight: 700;
+            color: var(--text-dark);
+            margin-bottom: 0.5rem;
+            line-height: 1.3;
+        }
+
+        .cinema-info {
+            display: flex;
+            gap: 1rem;
+            font-size: 0.85rem;
+            color: var(--text-muted);
+        }
+
+        .cinema-info span {
+            display: flex;
+            align-items: center;
+            gap: 0.35rem;
+        }
+
+        .cinema-info i {
+            color: var(--primary);
+        }
+
+        /* Schedule Section */
+        .schedule-section {
+            background: var(--bg-light);
+            border-radius: 12px;
+            padding: 0.75rem 1rem;
+            margin-bottom: 1rem;
+        }
+
+        .date-info {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-weight: 600;
+            color: var(--text-dark);
+            margin-bottom: 0.5rem;
+        }
+
+        .date-info i {
+            color: var(--primary);
+        }
+
+        .time-info {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .time-badge {
+            display: flex;
+            align-items: center;
+            gap: 0.25rem;
+            padding: 0.35rem 0.75rem;
+            border-radius: 8px;
+            font-weight: 600;
+            font-size: 0.9rem;
+        }
+
+        .time-badge.start {
+            background: rgba(16, 185, 129, 0.1);
+            color: var(--success);
+        }
+
+        .time-badge.end {
+            background: rgba(239, 68, 68, 0.1);
+            color: var(--danger);
+        }
+
+        .time-info > i {
+            color: var(--text-muted);
+            font-size: 0.85rem;
+        }
+
+        /* Revenue Section */
+        .revenue-section {
+            margin-bottom: 1rem;
+        }
+
+        .revenue-bar {
+            height: 8px;
+            background: var(--border);
+            border-radius: 4px;
+            overflow: hidden;
+            margin-bottom: 0.5rem;
+        }
+
+        .revenue-progress {
+            height: 100%;
+            background: linear-gradient(90deg, var(--success), var(--primary));
+            border-radius: 4px;
+            transition: width 0.5s ease;
+        }
+
+        .revenue-info {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 0.85rem;
+        }
+
+        .revenue-current {
+            display: flex;
+            align-items: center;
+            gap: 0.35rem;
+            font-weight: 700;
+            color: var(--success);
+        }
+
+        .revenue-max {
+            color: var(--text-muted);
+        }
+
+        /* Seats Section */
+        .seats-section {
+            margin-bottom: 1rem;
+        }
+
+        .seats-tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+        }
+
+        .seat-tag {
+            background: var(--bg-light);
+            padding: 0.35rem 0.75rem;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 500;
+        }
+
+        .seat-tag.standard { border-left: 3px solid var(--success); }
+        .seat-tag.vip { border-left: 3px solid var(--secondary); }
+        .seat-tag.premium { border-left: 3px solid var(--primary); }
+
+        /* Card Actions */
+        .card-actions {
+            display: flex;
+            gap: 0.5rem;
+            padding-top: 1rem;
+            border-top: 1px solid var(--border);
+        }
+
+        .btn-reserve {
+            flex: 1;
+            background: linear-gradient(135deg, var(--success), #059669);
+            color: white;
+            border: none;
+            padding: 0.75rem;
+            border-radius: 12px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            text-decoration: none;
+        }
+
+        .btn-reserve:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(16, 185, 129, 0.4);
+            color: white;
+        }
+        
+
+        .btn-reservations {
+            background: var(--bg-light);
+            color: var(--text-dark);
+            border: 2px solid var(--border);
+            padding: 0.75rem 1rem;
+            border-radius: 10px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .btn-reservations:hover {
+            border-color: var(--primary);
+            color: var(--primary);
+        }
+
+        /* No Results */
+        .no-results {
+            text-align: center;
+            padding: 4rem 2rem;
+            background: white;
+            border-radius: 16px;
+            box-shadow: var(--shadow);
+        }
+
+        .no-results i {
+            font-size: 4rem;
+            color: var(--text-muted);
+            margin-bottom: 1rem;
+        }
+
+        .no-results h3 {
+            color: var(--text-dark);
+            margin-bottom: 0.5rem;
+        }
+
+        .no-results p {
+            color: var(--text-muted);
+        }
+
+        /* Modal Styles */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.5);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s;
+        }
+
+        .modal-overlay.active {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .modal-content {
+            background: white;
+            border-radius: 20px;
+            width: 90%;
+            max-width: 700px;
+            max-height: 85vh;
+            overflow: hidden;
+            transform: scale(0.9);
+            transition: all 0.3s;
+        }
+
+        .modal-overlay.active .modal-content {
+            transform: scale(1);
+        }
+
+        .modal-header {
+            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+            color: white;
+            padding: 1.5rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .modal-header h2 {
+            font-size: 1.25rem;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .modal-close {
+            background: rgba(255,255,255,0.2);
+            border: none;
+            color: white;
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            cursor: pointer;
+            font-size: 1.25rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s;
+        }
+
+        .modal-close:hover {
+            background: rgba(255,255,255,0.3);
+        }
+
+        .modal-body {
+            padding: 1.5rem;
+            max-height: calc(85vh - 80px);
+            overflow-y: auto;
+        }
+
+        .reservation-card {
+            background: var(--bg-light);
+            border-radius: 12px;
+            padding: 1rem;
+            margin-bottom: 1rem;
+            border-left: 4px solid var(--primary);
+        }
+
+        .reservation-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 1rem;
+            padding-bottom: 0.75rem;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .reservation-id {
+            font-weight: 700;
+            color: var(--primary);
+        }
+
+        .reservation-date {
+            font-size: 0.85rem;
+            color: var(--text-muted);
+        }
+
+        .client-info {
+            font-size: 0.9rem;
+        }
+
+        .client-info strong {
+            color: var(--text-dark);
+        }
+
+        .status-badge {
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 600;
+        }
+
+        .status-badge.attente { background: #fef3c7; color: #d97706; }
+        .status-badge.confirme { background: #d1fae5; color: #059669; }
+        .status-badge.annule { background: #fee2e2; color: #dc2626; }
+
+        .billets-list {
+            display: grid;
+            gap: 0.5rem;
+        }
+
+        .billet-item {
+            background: white;
+            padding: 0.75rem 1rem;
+            border-radius: 8px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 0.9rem;
+        }
+
+        .billet-siege {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .billet-siege i {
+            color: var(--primary);
+        }
+
+        .billet-prix {
+            font-weight: 600;
+            color: var(--success);
+        }
+
+        .total-row {
+            margin-top: 1rem;
+            padding-top: 1rem;
+            border-top: 2px solid var(--border);
+            display: flex;
+            justify-content: space-between;
+            font-weight: 700;
+        }
+
+        .total-prix {
+            color: var(--primary);
+            font-size: 1.25rem;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 2rem;
+            color: var(--text-muted);
+        }
+
+        .loading i {
+            font-size: 2rem;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+
+        .no-reservations {
+            text-align: center;
+            padding: 2rem;
+            color: var(--text-muted);
+        }
+
+        .no-reservations i {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+            display: block;
+        }
+
+        /* Simple List View (fallback) */
+        .seances-list-simple {
+            background: white;
+            border-radius: 16px;
+            box-shadow: var(--shadow);
+            overflow: hidden;
+        }
+
+        .seance-row {
+            display: grid;
+            grid-template-columns: 2fr 1fr 1fr 1fr auto;
+            gap: 1rem;
+            padding: 1rem 1.5rem;
+            align-items: center;
+            border-bottom: 1px solid var(--border);
+            transition: background 0.2s;
+        }
+
+        .seance-row:hover {
+            background: var(--bg-light);
+        }
+
+        .seance-row:last-child {
+            border-bottom: none;
+        }
+
+        .film-info h4 {
+            font-weight: 600;
+            margin-bottom: 0.25rem;
+        }
+
+        .film-info p {
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            margin: 0;
+        }
+    </style>
+</head>
+<body>
+    <!-- Navbar -->
+    <nav class="navbar">
+        <a class="navbar-brand" href="/seances">
+            <i class="bi bi-film"></i>
+            CinéMax
+        </a>
+    </nav>
+
+    <div class="container-main">
+        <!-- Search Card -->
+        <div class="search-card">
+            <h2><i class="bi bi-search me-2"></i>Rechercher une séance</h2>
+            <form th:action="@{/seances}" method="get" onsubmit="return convertDate()">
+                <div class="search-grid">
+                    <div class="form-group">
+                        <label for="nomFilm">Nom du Film</label>
+                        <input type="text" id="nomFilm" name="nomFilm" 
+                               th:value="${nomFilm}" 
+                               placeholder="Ex: Avengers">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="date">Date</label>
+                        <input type="text" 
+                               id="date" 
+                               name="date" 
+                               placeholder="JJ/MM/AAAA"
+                               th:value="${date != null ? #temporals.format(date, 'dd/MM/yyyy') : ''}">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="heure">Heure</label>
+                        <input type="text" 
+                               id="heure" 
+                               name="heure" 
+                               placeholder="HH:MM (ex: 14:30)"
+                               pattern="([01]?[0-9]|2[0-3]):[0-5][0-9]"
+                               title="Format: HH:MM (ex: 14:30)"
+                               th:value="${heure}">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="cinemaId">Cinéma</label>
+                        <select id="cinemaId" name="cinemaId">
+                            <option value="">Tous les cinémas</option>
+                            <option th:each="cinema : ${cinemas}" 
+                                    th:value="${cinema.id}" 
+                                    th:text="${cinema.nom}"
+                                    th:selected="${cinemaId != null && cinemaId == cinema.id}">
+                            </option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="salleId">Salle</label>
+                        <select id="salleId" name="salleId">
+                            <option value="">Toutes les salles</option>
+                            <option th:each="salle : ${salles}" 
+                                    th:value="${salle.id}" 
+                                    th:text="${salle.nom}"
+                                    th:selected="${salleId != null && salleId == salle.id}">
+                            </option>
+                        </select>
+                    </div>
+                </div>
+                
+                <div class="d-flex gap-2 mt-3">
+                    <button type="submit" class="btn-search">
+                        <i class="bi bi-search"></i> Rechercher
+                    </button>
+                    <button type="button" class="btn-reset" onclick="window.location.href='/seances'">
+                        <i class="bi bi-x-lg"></i> Réinitialiser
+                    </button>
+                </div>
+            </form>
+        </div>
+
+        <!-- Stats Bar -->
+        <div class="stats-bar">
+            <div class="stat-item">
+                <div class="stat-icon primary">
+                    <i class="bi bi-calendar-event"></i>
+                </div>
+                <div class="stat-info">
+                    <h4 th:text="${#lists.size(seances)}">0</h4>
+                    <p>Séances</p>
+                </div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-icon success">
+                    <i class="bi bi-cash-stack"></i>
+                </div>
+                <div class="stat-info">
+                    <h4 th:text="${totalCA != null ? #numbers.formatInteger(totalCA, 0, 'WHITESPACE') + ' Ar' : '0 Ar'}">0 Ar</h4>
+                    <p>Revenus actuels</p>
+                </div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-icon warning">
+                    <i class="bi bi-graph-up-arrow"></i>
+                </div>
+                <div class="stat-info">
+                    <h4 th:text="${totalRevenusMax != null ? #numbers.formatInteger(totalRevenusMax, 0, 'WHITESPACE') + ' Ar' : '0 Ar'}">0 Ar</h4>
+                    <p>Revenus potentiels</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- No Results -->
+        <div th:if="${#lists.isEmpty(seances)}" class="no-results">
+            <i class="bi bi-film"></i>
+            <h3>Aucune séance trouvée</h3>
+            <p>Essayez de modifier vos critères de recherche</p>
+        </div>
+
+        <!-- Seances Grid (simple - without grouping) -->
+        <div th:if="${!#lists.isEmpty(seances)}" class="seances-grid">
+            <div th:each="seance : ${seances}" class="seance-card">
+                <!-- Film Image -->
+                <div class="film-poster">
+                    <img th:if="${seance.film.imageUrl != null && !seance.film.imageUrl.isEmpty()}" 
+                         th:src="${seance.film.imageUrl}" 
+                         th:alt="${seance.film.titre}"
+                         class="poster-img">
+                    <div th:if="${seance.film.imageUrl == null || seance.film.imageUrl.isEmpty()}" 
+                         class="poster-placeholder">
+                        <i class="bi bi-film"></i>
+                    </div>
+                    <div class="film-overlay">
+                        <span class="genre-badge" th:if="${seance.film.genre}" th:text="${seance.film.genre}">Action</span>
+                        <span class="duration-badge" th:if="${seance.film.duree}">
+                            <i class="bi bi-clock"></i> <span th:text="${seance.film.duree + ' min'}">120 min</span>
+                        </span>
+                    </div>
+                </div>
+                
+                <div class="card-content">
+                    <div class="film-title-section">
+                        <h3 th:text="${seance.film.titre}">Film Title</h3>
+                        <div class="cinema-info">
+                            <span><i class="bi bi-building"></i> <span th:text="${seance.salle.cinema.nom}">Cinema</span></span>
+                            <span><i class="bi bi-door-open"></i> <span th:text="${seance.salle.nom}">Salle</span></span>
+                        </div>
+                    </div>
+                    
+                    <div class="schedule-section">
+                        <div class="date-info">
+                            <i class="bi bi-calendar3"></i>
+                            <span th:text="${#temporals.format(seance.dateSeance, 'EEEE dd MMM')}">Lundi 01 Jan</span>
+                        </div>
+                        <div class="time-info">
+                            <span class="time-badge start">
+                                <i class="bi bi-play-fill"></i>
+                                <span th:text="${#temporals.format(seance.heureDebut, 'HH:mm')}">10:00</span>
+                            </span>
+                            <i class="bi bi-arrow-right"></i>
+                            <span class="time-badge end">
+                                <i class="bi bi-stop-fill"></i>
+                                <span th:text="${#temporals.format(seance.heureFin, 'HH:mm')}">12:00</span>
+                            </span>
+                        </div>
+                    </div>
+                    
+                    <div class="revenue-section">
+                        <div class="revenue-bar">
+                            <div class="revenue-progress" 
+                                 th:style="${'width: ' + (revenusMaxMap.get(seance.id) != null && revenusMaxMap.get(seance.id) > 0 ? (revenusMap.get(seance.id) * 100 / revenusMaxMap.get(seance.id)) : 0) + '%'}">
+                            </div>
+                        </div>
+                        <div class="revenue-info">
+                            <span class="revenue-current">
+                                <i class="bi bi-cash"></i>
+                                <span th:text="${revenusMap.get(seance.id) != null ? #numbers.formatInteger(revenusMap.get(seance.id), 0, 'WHITESPACE') + ' Ar' : '0 Ar'}">0 Ar</span>
+                            </span>
+                            <span class="revenue-max">
+                                / <span th:text="${revenusMaxMap.get(seance.id) != null ? #numbers.formatInteger(revenusMaxMap.get(seance.id), 0, 'WHITESPACE') + ' Ar' : '0 Ar'}">0 Ar</span>
+                            </span>
+                        </div>
+                    </div>
+                    
+                    <div class="seats-section" th:if="${availableSeatsMap != null && availableSeatsMap.containsKey(seance.id)}">
+                        <div class="seats-tags">
+                            <span th:each="seatEntry : ${availableSeatsMap.get(seance.id)}" 
+                                  class="seat-tag"
+                                  th:classappend="${#strings.toLowerCase(seatEntry.key).contains('vip') ? 'vip' : (#strings.toLowerCase(seatEntry.key).contains('premium') ? 'premium' : 'standard')}"
+                                  th:text="${seatEntry.key + ': ' + seatEntry.value}">
+                                Standard: 10
+                            </span>
+                        </div>
+                    </div>
+                    
+                    <div class="card-actions">
+                        <a th:href="@{'/reservation/seats/' + ${seance.id}}" class="btn-reserve">
+                            <i class="bi bi-ticket-perforated"></i> Réserver
+                        </a>
+                        <button class="btn-reservations" 
+                                th:data-seance-id="${seance.id}" 
+                                th:data-film-titre="${seance.film.titre}"
+                                onclick="openReservationsModal(this.dataset.seanceId, this.dataset.filmTitre)">
+                            <i class="bi bi-list-ul"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Reservations -->
+    <div id="reservationsModal" class="modal-overlay">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2><i class="bi bi-ticket-perforated"></i> <span id="modalTitle">Réservations</span></h2>
+                <button class="modal-close" onclick="closeModal()">
+                    <i class="bi bi-x"></i>
+                </button>
+            </div>
+            <div class="modal-body" id="modalBody">
+                <div class="loading">
+                    <i class="bi bi-arrow-repeat"></i>
+                    <p>Chargement...</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        function convertDate() {
+            const dateInput = document.getElementById('date');
+            const dateValue = dateInput.value.trim();
+            
+            if (dateValue && dateValue.includes('/')) {
+                const parts = dateValue.split('/');
+                if (parts.length === 3) {
+                    const day = parts[0].padStart(2, '0');
+                    const month = parts[1].padStart(2, '0');
+                    const year = parts[2];
+                    dateInput.value = `${year}-${month}-${day}`;
+                }
+            }
+            return true;
+        }
+
+        function openReservationsModal(seanceId, filmTitle) {
+            const modal = document.getElementById('reservationsModal');
+            const modalTitle = document.getElementById('modalTitle');
+            const modalBody = document.getElementById('modalBody');
+            
+            modalTitle.textContent = 'Réservations - ' + filmTitle;
+            modalBody.innerHTML = '<div class="loading"><i class="bi bi-arrow-repeat"></i><p>Chargement...</p></div>';
+            
+            modal.classList.add('active');
+            
+            // Fetch reservations
+            fetch('/seances/' + seanceId + '/reservations')
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        renderReservations(data);
+                    } else {
+                        modalBody.innerHTML = '<div class="no-reservations"><i class="bi bi-exclamation-circle"></i><p>Erreur: ' + data.message + '</p></div>';
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    modalBody.innerHTML = '<div class="no-reservations"><i class="bi bi-exclamation-circle"></i><p>Erreur de chargement</p></div>';
+                });
+        }
+
+        function renderReservations(data) {
+            const modalBody = document.getElementById('modalBody');
+            
+            if (data.reservations.length === 0) {
+                modalBody.innerHTML = '<div class="no-reservations"><i class="bi bi-inbox"></i><p>Aucune réservation pour cette séance</p></div>';
+                return;
+            }
+            
+            let html = '<div class="mb-3"><strong>' + data.totalReservations + ' réservation(s)</strong></div>';
+            
+            data.reservations.forEach(res => {
+                let statusClass = 'attente';
+                if (res.status === 20) statusClass = 'confirme';
+                if (res.status === 30) statusClass = 'annule';
+                
+                html += `
+                    <div class="reservation-card">
+                        <div class="reservation-header">
+                            <div>
+                                <div class="reservation-id">Réservation #${res.id}</div>
+                                <div class="reservation-date">${formatDate(res.dateReservation)}</div>
+                                <div class="client-info"><strong>${res.clientPrenom || ''} ${res.clientNom || ''}</strong> - ${res.clientEmail || ''}</div>
+                            </div>
+                            <span class="status-badge ${statusClass}">${res.statusLabel}</span>
+                        </div>
+                        <div class="billets-list">
+                `;
+                
+                res.billets.forEach(billet => {
+                    let billetStatusClass = '';
+                    if (billet.statut === 'Réservé') billetStatusClass = 'attente';
+                    else if (billet.statut === 'Confirmé') billetStatusClass = 'confirme';
+                    else if (billet.statut === 'Annulé') billetStatusClass = 'annule';
+                    
+                    html += `
+                        <div class="billet-item">
+                            <div class="billet-siege">
+                                <i class="bi bi-ticket"></i>
+                                <span>Rangée ${billet.siegeRangee} - Siège ${billet.siegeNumero}</span>
+                                <span class="seat-tag ${billet.typeSiege ? billet.typeSiege.toLowerCase() : ''}">${billet.typeSiege || 'N/A'}</span>
+                                <span class="status-badge ${billetStatusClass}" style="margin-left: 0.5rem;">${billet.statut}</span>
+                            </div>
+                            <span class="billet-prix">${billet.prix ? formatNumber(billet.prix) + ' Ar' : '--'}</span>
+                        </div>
+                    `;
+                });
+                
+                html += `
+                        </div>
+                        <div class="total-row">
+                            <span>Total (${res.nombreBillets} billet(s))</span>
+                            <span class="total-prix">${formatNumber(res.totalPrix)} Ar</span>
+                        </div>
+                    </div>
+                `;
+            });
+            
+            modalBody.innerHTML = html;
+        }
+
+        function formatDate(dateStr) {
+            if (!dateStr) return '';
+            const date = new Date(dateStr);
+            return date.toLocaleDateString('fr-FR', {
+                day: '2-digit',
+                month: '2-digit',
+                year: 'numeric',
+                hour: '2-digit',
+                minute: '2-digit'
+            });
+        }
+
+        function formatNumber(num) {
+            return new Intl.NumberFormat('fr-FR').format(num);
+        }
+
+        function closeModal() {
+            document.getElementById('reservationsModal').classList.remove('active');
+        }
+
+        // Close modal on overlay click
+        document.getElementById('reservationsModal').addEventListener('click', function(e) {
+            if (e.target === this) {
+                closeModal();
+            }
+        });
+
+        // Close modal on Escape key
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') {
+                closeModal();
+            }
+        });
+    </script>
+</body>
+</html>

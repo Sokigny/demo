@@ -1,0 +1,358 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sélection des Sièges - Cinéma</title>
+    <link rel="stylesheet" th:href="@{/css/seat-selection.css}">
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <a th:href="@{/seances}" class="back-link">← Retour</a>
+            <h1>Sélection des Sièges</h1>
+        </div>
+        
+        <div class="movie-info">
+            <h2 th:text="${seance.film.titre}"></h2>
+            <div class="info-details">
+                <span class="badge badge-cinema" th:text="${seance.salle.cinema.nom}"></span>
+                <span class="badge badge-salle" th:text="${seance.salle.nom}"></span>
+                <span th:text="${#temporals.format(seance.dateSeance, 'dd/MM/yyyy')}"></span>
+                <span th:text="${#temporals.format(seance.heureDebut, 'HH:mm')} + ' - ' + ${#temporals.format(seance.heureFin, 'HH:mm')}"></span>
+            </div>
+        </div>
+        
+        <div class="legend">
+            <div class="legend-item">
+                <div class="seat-preview available"></div>
+                <span>Disponible</span>
+            </div>
+            <div class="legend-item">
+                <div class="seat-preview selected"></div>
+                <span>Sélectionné</span>
+            </div>
+            <div class="legend-item">
+                <div class="seat-preview occupied"></div>
+                <span>Occupé</span>
+            </div>
+        </div>
+        
+        <div class="screen">ÉCRAN</div>
+        
+        <div class="seat-map">
+            <div th:each="entry : ${seatsByRow}" class="row-container">
+                <div class="row-label" th:text="${entry.key}"></div>
+                <div class="seats-row">
+                    <div th:each="seat : ${entry.value}" 
+                         th:classappend="${reservedSeatIds.contains(seat.id)} ? 'seat occupied' : 'seat available'"
+                         th:attr="data-seat-id=${seat.id}, 
+                                  data-type=${seat.typeSiege.nom},
+                                  data-price=${prixParType.get(seat.typeSiege.id)},
+                                  data-row=${seat.rangee},
+                                  data-number=${seat.numero}"
+                         th:onclick="${reservedSeatIds.contains(seat.id)} ? '' : 'toggleSeat(this)'">
+                        <span class="seat-number" th:text="${seat.numero}"></span>
+                        <span class="seat-type-label" th:text="${seat.typeSiege.nom}"></span>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="selection-summary">
+            <div class="summary-content">
+                <div class="summary-info">
+                    <span id="selected-count">0</span> siège(s) sélectionné(s)
+                    <span id="total-price">0</span> Ar
+                </div>
+                <button id="confirm-btn" class="btn-confirm" disabled onclick="showConfirmDialog()">
+                    Confirmer la réservation
+                </button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Dialog de confirmation -->
+    <div id="confirm-dialog" class="dialog-overlay" style="display: none;">
+        <div class="dialog">
+            <h2>Confirmation de réservation</h2>
+            <div class="dialog-content">
+                <p>Vous avez sélectionné <strong id="dialog-seat-count">0</strong> siège(s)</p>
+                <p>Prix total: <strong id="dialog-total-price">0</strong> Ar</p>
+                
+                <!-- Recherche client existant -->
+                <div class="form-group client-search-wrapper">
+                    <label for="client-search">Rechercher un client existant</label>
+                    <div class="search-input-wrapper">
+                        <input type="text" id="client-search" placeholder="Tapez le nom, prénom ou email..." autocomplete="off">
+                        <span class="search-icon">🔍</span>
+                    </div>
+                    <div id="client-suggestions" class="suggestions-dropdown" style="display: none;"></div>
+                </div>
+                
+                <div class="separator">
+                    <span>ou remplissez les informations</span>
+                </div>
+                
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="client-nom">Nom *</label>
+                        <input type="text" id="client-nom" placeholder="Entrez votre nom" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="client-prenom">Prénom *</label>
+                        <input type="text" id="client-prenom" placeholder="Entrez votre prénom" required>
+                    </div>
+                </div>
+                
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="client-email">Email *</label>
+                        <input type="email" id="client-email" placeholder="exemple@email.com" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="client-telephone">Téléphone *</label>
+                        <input type="tel" id="client-telephone" placeholder="034 00 000 00" required>
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label for="client-date-naissance">Date de naissance *</label>
+                    <input type="date" id="client-date-naissance" required>
+                </div>
+                
+                <div id="error-message" class="error-message" style="display: none;"></div>
+            </div>
+            <div class="dialog-actions">
+                <button class="btn-cancel" onclick="closeConfirmDialog()">Annuler</button>
+                <button class="btn-validate" onclick="submitReservation()">Valider</button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Dialog de succès -->
+    <div id="success-dialog" class="dialog-overlay" style="display: none;">
+        <div class="dialog success-dialog">
+            <div class="success-icon">✓</div>
+            <h2>Réservation confirmée !</h2>
+            <div class="dialog-content">
+                <p>Votre réservation a été enregistrée avec succès.</p>
+                <p><strong>Numéro de réservation:</strong> <span id="reservation-id"></span></p>
+                <p><strong>Nombre de places:</strong> <span id="success-seat-count"></span></p>
+                <p><strong>Prix total:</strong> <span id="success-price"></span> Ar</p>
+            </div>
+            <div class="dialog-actions">
+                <button class="btn-validate" onclick="window.location.href='/seances'">Retour aux séances</button>
+            </div>
+        </div>
+    </div>
+    
+    <script th:inline="javascript">
+        const seanceId = /*[[${seance.id}]]*/ 0;
+        let selectedSeats = [];
+        let searchTimeout = null;
+        
+        // Initialisation de la recherche client
+        document.addEventListener('DOMContentLoaded', function() {
+            const searchInput = document.getElementById('client-search');
+            const suggestionsDiv = document.getElementById('client-suggestions');
+            
+            searchInput.addEventListener('input', function() {
+                const query = this.value.trim();
+                
+                // Annuler la recherche précédente
+                if (searchTimeout) {
+                    clearTimeout(searchTimeout);
+                }
+                
+                if (query.length < 2) {
+                    suggestionsDiv.style.display = 'none';
+                    return;
+                }
+                
+                // Délai de 300ms avant la recherche
+                searchTimeout = setTimeout(() => {
+                    searchClients(query);
+                }, 300);
+            });
+            
+            // Fermer les suggestions si on clique ailleurs
+            document.addEventListener('click', function(e) {
+                if (!e.target.closest('.client-search-wrapper')) {
+                    suggestionsDiv.style.display = 'none';
+                }
+            });
+        });
+        
+        function searchClients(query) {
+            const suggestionsDiv = document.getElementById('client-suggestions');
+            
+            fetch('/reservation/api/clients/search?query=' + encodeURIComponent(query))
+                .then(response => response.json())
+                .then(clients => {
+                    if (clients.length === 0) {
+                        suggestionsDiv.innerHTML = '<div class="no-results">Aucun client trouvé</div>';
+                    } else {
+                        suggestionsDiv.innerHTML = clients.map(client => `
+                            <div class="suggestion-item" onclick="selectClient(${JSON.stringify(client).replace(/"/g, '&quot;')})">
+                                <div class="client-name">${client.prenom} ${client.nom}</div>
+                                <div class="client-details">${client.email} ${client.telephone ? '• ' + client.telephone : ''}</div>
+                            </div>
+                        `).join('');
+                    }
+                    suggestionsDiv.style.display = 'block';
+                })
+                .catch(error => {
+                    console.error('Erreur recherche clients:', error);
+                    suggestionsDiv.style.display = 'none';
+                });
+        }
+        
+        function selectClient(client) {
+            document.getElementById('client-nom').value = client.nom || '';
+            document.getElementById('client-prenom').value = client.prenom || '';
+            document.getElementById('client-email').value = client.email || '';
+            document.getElementById('client-telephone').value = client.telephone || '';
+            document.getElementById('client-date-naissance').value = client.dateNaissance || '';
+            document.getElementById('client-search').value = client.prenom + ' ' + client.nom;
+            document.getElementById('client-suggestions').style.display = 'none';
+        }
+        
+        function toggleSeat(element) {
+            const seatId = parseInt(element.getAttribute('data-seat-id'));
+            const price = parseInt(element.getAttribute('data-price'));
+            
+            if (element.classList.contains('selected')) {
+                // Désélectionner
+                element.classList.remove('selected');
+                selectedSeats = selectedSeats.filter(s => s.id !== seatId);
+            } else {
+                // Sélectionner
+                element.classList.add('selected');
+                selectedSeats.push({
+                    id: seatId,
+                    price: price,
+                    row: element.getAttribute('data-row'),
+                    number: element.getAttribute('data-number')
+                });
+            }
+            
+            updateSummary();
+        }
+        
+        function updateSummary() {
+            const count = selectedSeats.length;
+            const total = selectedSeats.reduce((sum, seat) => sum + seat.price, 0);
+            
+            document.getElementById('selected-count').textContent = count;
+            document.getElementById('total-price').textContent = total.toLocaleString();
+            document.getElementById('confirm-btn').disabled = count === 0;
+        }
+        
+        function showConfirmDialog() {
+            if (selectedSeats.length === 0) return;
+            
+            const count = selectedSeats.length;
+            const total = selectedSeats.reduce((sum, seat) => sum + seat.price, 0);
+            
+            document.getElementById('dialog-seat-count').textContent = count;
+            document.getElementById('dialog-total-price').textContent = total.toLocaleString();
+            document.getElementById('confirm-dialog').style.display = 'flex';
+            document.getElementById('client-nom').focus();
+        }
+        
+        function closeConfirmDialog() {
+            document.getElementById('confirm-dialog').style.display = 'none';
+            document.getElementById('client-search').value = '';
+            document.getElementById('client-nom').value = '';
+            document.getElementById('client-prenom').value = '';
+            document.getElementById('client-email').value = '';
+            document.getElementById('client-telephone').value = '';
+            document.getElementById('client-date-naissance').value = '';
+            document.getElementById('client-suggestions').style.display = 'none';
+            document.getElementById('error-message').style.display = 'none';
+        }
+        
+        function submitReservation() {
+            const clientNom = document.getElementById('client-nom').value.trim();
+            const clientPrenom = document.getElementById('client-prenom').value.trim();
+            const clientEmail = document.getElementById('client-email').value.trim();
+            const clientTelephone = document.getElementById('client-telephone').value.trim();
+            const clientDateNaissance = document.getElementById('client-date-naissance').value;
+            
+            if (!clientNom || !clientPrenom || !clientEmail || !clientTelephone || !clientDateNaissance) {
+                document.getElementById('error-message').textContent = 'Veuillez remplir tous les champs';
+                document.getElementById('error-message').style.display = 'block';
+                return;
+            }
+            
+            // Validation simple de l'email
+            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            if (!emailRegex.test(clientEmail)) {
+                document.getElementById('error-message').textContent = 'Veuillez entrer un email valide';
+                document.getElementById('error-message').style.display = 'block';
+                return;
+            }
+            
+            // Validation de la date de naissance (doit être dans le passé et avoir au moins 5 ans)
+            const dateNaissance = new Date(clientDateNaissance);
+            const today = new Date();
+            const age = Math.floor((today - dateNaissance) / (365.25 * 24 * 60 * 60 * 1000));
+            
+            if (dateNaissance > today) {
+                document.getElementById('error-message').textContent = 'La date de naissance doit être dans le passé';
+                document.getElementById('error-message').style.display = 'block';
+                return;
+            }
+            
+            if (age < 5) {
+                document.getElementById('error-message').textContent = 'L\'âge minimum requis est de 5 ans';
+                document.getElementById('error-message').style.display = 'block';
+                return;
+            }
+            
+            const seatIds = selectedSeats.map(s => s.id);
+            
+            // Envoyer la requête
+            fetch('/reservation/confirm', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                },
+                body: new URLSearchParams({
+                    seanceId: seanceId,
+                    seatIds: seatIds,
+                    clientNom: clientNom,
+                    clientPrenom: clientPrenom,
+                    clientEmail: clientEmail,
+                    clientTelephone: clientTelephone,
+                    clientDateNaissance: clientDateNaissance
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    closeConfirmDialog();
+                    showSuccessDialog(data);
+                } else {
+                    document.getElementById('error-message').textContent = data.message;
+                    document.getElementById('error-message').style.display = 'block';
+                }
+            })
+            .catch(error => {
+                document.getElementById('error-message').textContent = 'Erreur de connexion';
+                document.getElementById('error-message').style.display = 'block';
+            });
+        }
+        
+        function showSuccessDialog(data) {
+            document.getElementById('reservation-id').textContent = data.reservationId;
+            document.getElementById('success-seat-count').textContent = data.nombrePlaces;
+            document.getElementById('success-price').textContent = data.prixTotal.toLocaleString();
+            document.getElementById('success-dialog').style.display = 'flex';
+        }
+    </script>
+</body>
+</html>

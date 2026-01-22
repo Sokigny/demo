@@ -1,0 +1,353 @@
+<!DOCTYPE html>
+<html lang="fr" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Configuration des Sièges - Cinema Admin</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+    <link rel="stylesheet" th:href="@{/css/admin.css}">
+</head>
+<body>
+    <div class="d-flex">
+        <!-- Sidebar -->
+        <nav class="sidebar">
+            <div class="sidebar-header">
+                <div class="sidebar-brand">
+                    <i class="bi bi-film"></i>
+                    <span>Cinema Admin</span>
+                </div>
+                <button class="sidebar-toggle">
+                    <i class="bi bi-list"></i>
+                </button>
+            </div>
+            <nav>
+                <a th:href="@{/admin/dashboard}" class="nav-link">
+                    <i class="bi bi-speedometer2"></i>
+                    <span>Dashboard</span>
+                </a>
+                <a th:href="@{/admin/films}" class="nav-link">
+                    <i class="bi bi-camera-reels"></i>
+                    <span>Films</span>
+                </a>
+                <a th:href="@{/admin/salles}" class="nav-link active">
+                    <i class="bi bi-building"></i>
+                    <span>Salles</span>
+                </a>
+                <a th:href="@{/admin/seances}" class="nav-link">
+                    <i class="bi bi-calendar-event"></i>
+                    <span>Séances</span>
+                </a>
+            </nav>
+        </nav>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <div class="container-fluid">
+                <!-- Header -->
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <div>
+                        <h1>
+                            <i class="bi bi-grid-3x3 text-netflix-red"></i>
+                            Configuration des Sièges
+                        </h1>
+                        <p class="text-muted mb-0">
+                            <strong th:text="${salle.nom}">Salle 1</strong> - 
+                            Capacité: <span th:text="${salle.capacite}">100</span> sièges
+                        </p>
+                    </div>
+                </div>
+
+                <!-- Steps Indicator -->
+                <div class="row mb-4">
+                    <div class="col-12">
+                        <div class="d-flex justify-content-center align-items-center gap-3">
+                            <div class="step-indicator completed">
+                                <div class="step-number">1</div>
+                                <span class="step-label">Infos Salle</span>
+                            </div>
+                            <div class="step-line"></div>
+                            <div class="step-indicator active">
+                                <div class="step-number">2</div>
+                                <span class="step-label">Configuration Sièges</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Configuration Form -->
+                <div class="row justify-content-center">
+                    <div class="col-lg-10">
+                        <div class="card">
+                            <div class="card-body">
+                                <form th:action="@{/admin/salles/{id}/configure-sieges(id=${salle.id})}" 
+                                      method="post" 
+                                      id="configForm">
+                                    
+                                    <div class="alert alert-info border-0 bg-opacity-25 mb-4">
+                                        <i class="bi bi-info-circle me-2"></i>
+                                        Définissez les types de sièges pour votre salle. 
+                                        <strong>La somme doit être égale à <span th:text="${salle.capacite}">100</span> sièges.</strong>
+                                    </div>
+
+                                    <!-- Types de Sièges -->
+                                    <div id="typesContainer">
+                                        <div class="type-siege-row mb-3">
+                                            <div class="row align-items-end">
+                                                <div class="col-md-6">
+                                                    <label class="form-label">
+                                                        <i class="bi bi-tag me-1"></i>Type de Siège
+                                                    </label>
+                                                    <select class="form-select type-select" 
+                                                            name="typeSiegeIds" 
+                                                            required>
+                                                        <option value="">Sélectionner un type</option>
+                                                        <option th:each="type : ${typeSieges}" 
+                                                                th:value="${type.id}" 
+                                                                th:text="${type.nom}">
+                                                            Standard
+                                                        </option>
+                                                    </select>
+                                                </div>
+                                                <div class="col-md-4">
+                                                    <label class="form-label">
+                                                        <i class="bi bi-123 me-1"></i>Nombre de Sièges
+                                                    </label>
+                                                    <input type="number" 
+                                                           class="form-control nombre-sieges" 
+                                                           name="nombreSieges" 
+                                                           placeholder="Ex: 50"
+                                                           min="1" 
+                                                           required>
+                                                </div>
+                                                <div class="col-md-2">
+                                                    <button type="button" 
+                                                            class="btn btn-outline-danger w-100 remove-row" 
+                                                            disabled>
+                                                        <i class="bi bi-trash"></i>
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <button type="button" 
+                                            class="btn btn-outline-primary mb-4" 
+                                            id="addTypeBtn">
+                                        <i class="bi bi-plus-lg me-2"></i>Ajouter un Type de Siège
+                                    </button>
+
+                                    <!-- Summary -->
+                                    <div class="row g-3 mb-4">
+                                        <div class="col-md-6">
+                                            <div class="card">
+                                                <div class="card-body">
+                                                    <div class="d-flex justify-content-between align-items-center">
+                                                        <div>
+                                                            <p class="text-muted mb-1">Capacité Totale</p>
+                                                            <h3 class="mb-0 text-primary" th:text="${salle.capacite}">100</h3>
+                                                        </div>
+                                                        <i class="bi bi-grid-3x3 fs-1 text-primary"></i>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <div class="card">
+                                                <div class="card-body">
+                                                    <div class="d-flex justify-content-between align-items-center">
+                                                        <div>
+                                                            <p class="text-muted mb-1">Sièges Configurés</p>
+                                                            <h3 class="mb-0" id="totalConfigured">0</h3>
+                                                        </div>
+                                                        <i class="bi bi-check-circle fs-1" id="validationIcon"></i>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div id="errorMessage" class="alert alert-danger d-none">
+                                        <i class="bi bi-exclamation-triangle me-2"></i>
+                                        <span id="errorText"></span>
+                                    </div>
+
+                                    <div class="d-flex gap-2">
+                                        <button type="submit" class="btn btn-netflix" id="submitBtn" disabled>
+                                            <i class="bi bi-check-lg me-2"></i>Créer la Salle
+                                        </button>
+                                        <a th:href="@{/admin/salles/edit/{id}(id=${salle.id})}" class="btn btn-secondary">
+                                            <i class="bi bi-arrow-left me-2"></i>Retour
+                                        </a>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script th:src="@{/js/admin.js}"></script>
+    <script th:inline="javascript">
+        const capaciteTotale = /*[[${salle.capacite}]]*/ 100;
+
+        // Ajouter une ligne de type de siège
+        document.getElementById('addTypeBtn').addEventListener('click', function() {
+            const container = document.getElementById('typesContainer');
+            const firstRow = container.querySelector('.type-siege-row');
+            const newRow = firstRow.cloneNode(true);
+            
+            // Reset values
+            newRow.querySelectorAll('select, input').forEach(el => {
+                el.value = '';
+            });
+            
+            // Enable remove button
+            newRow.querySelector('.remove-row').disabled = false;
+            
+            container.appendChild(newRow);
+            updateValidation();
+        });
+
+        // Supprimer une ligne
+        document.addEventListener('click', function(e) {
+            if (e.target.closest('.remove-row')) {
+                const row = e.target.closest('.type-siege-row');
+                if (document.querySelectorAll('.type-siege-row').length > 1) {
+                    row.remove();
+                    updateValidation();
+                }
+            }
+        });
+
+        // Validation en temps réel
+        document.addEventListener('input', function(e) {
+            if (e.target.classList.contains('nombre-sieges')) {
+                updateValidation();
+            }
+        });
+
+        document.addEventListener('change', function(e) {
+            if (e.target.classList.contains('type-select')) {
+                updateValidation();
+            }
+        });
+
+        function updateValidation() {
+            const rows = document.querySelectorAll('.type-siege-row');
+            let total = 0;
+            let allFilled = true;
+
+            rows.forEach(row => {
+                const typeSelect = row.querySelector('.type-select');
+                const nombreInput = row.querySelector('.nombre-sieges');
+                
+                if (!typeSelect.value || !nombreInput.value) {
+                    allFilled = false;
+                } else {
+                    total += parseInt(nombreInput.value) || 0;
+                }
+            });
+
+            document.getElementById('totalConfigured').textContent = total;
+            
+            const submitBtn = document.getElementById('submitBtn');
+            const errorMessage = document.getElementById('errorMessage');
+            const errorText = document.getElementById('errorText');
+            const validationIcon = document.getElementById('validationIcon');
+
+            if (total === capaciteTotale && allFilled) {
+                submitBtn.disabled = false;
+                errorMessage.classList.add('d-none');
+                validationIcon.className = 'bi bi-check-circle fs-1 text-success';
+            } else {
+                submitBtn.disabled = true;
+                validationIcon.className = 'bi bi-exclamation-circle fs-1 text-warning';
+                
+                if (allFilled) {
+                    errorMessage.classList.remove('d-none');
+                    if (total > capaciteTotale) {
+                        errorText.textContent = `Vous avez dépassé la capacité de ${capaciteTotale - total} sièges.`;
+                    } else if (total < capaciteTotale) {
+                        errorText.textContent = `Il manque ${capaciteTotale - total} sièges pour atteindre la capacité totale.`;
+                    }
+                } else {
+                    errorMessage.classList.add('d-none');
+                }
+            }
+
+            // Update remove buttons
+            const removeButtons = document.querySelectorAll('.remove-row');
+            if (rows.length === 1) {
+                removeButtons[0].disabled = true;
+            } else {
+                removeButtons.forEach(btn => btn.disabled = false);
+            }
+        }
+
+        // Initial validation
+        updateValidation();
+    </script>
+    
+    <style>
+        .step-indicator {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .step-number {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background: var(--netflix-gray);
+            border: 3px solid var(--netflix-gray);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2rem;
+            font-weight: bold;
+            color: #fff;
+        }
+        
+        .step-indicator.completed .step-number {
+            background: var(--netflix-red);
+            border-color: var(--netflix-red);
+        }
+        
+        .step-indicator.active .step-number {
+            background: transparent;
+            border-color: var(--netflix-red);
+            color: var(--netflix-red);
+        }
+        
+        .step-label {
+            font-size: 0.9rem;
+            color: #808080;
+        }
+        
+        .step-indicator.completed .step-label,
+        .step-indicator.active .step-label {
+            color: #fff;
+            font-weight: 600;
+        }
+        
+        .step-line {
+            width: 100px;
+            height: 3px;
+            background: var(--netflix-gray);
+            margin-bottom: 35px;
+        }
+        
+        .step-indicator.completed ~ .step-line {
+            background: var(--netflix-red);
+        }
+    </style>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script th:src="@{/js/admin.js}"></script>
+</body>
+</html>

@@ -1,0 +1,356 @@
+/* ========================================
+   CINEMA SEANCES - STYLE MODERNE NETFLIX
+   ======================================== */
+
+/* Reset et base */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Netflix Sans', 'Helvetica Neue', Arial, sans-serif;
+    background-color: #141414;
+    color: #e5e5e5;
+    min-height: 100vh;
+    padding: 20px;
+}
+
+.container {
+    max-width: 1400px;
+    margin: 0 auto;
+    background-color: #1f1f1f;
+    border-radius: 8px;
+    padding: 30px;
+}
+
+/* Header */
+h1 {
+    color: #ffffff;
+    font-size: 2.2em;
+    font-weight: 600;
+    margin-bottom: 25px;
+    letter-spacing: -0.5px;
+}
+
+.page-title {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.icon-cinema {
+    font-size: 1.8em;
+}
+
+/* Formulaire de recherche */
+.search-form {
+    background-color: #2a2a2a;
+    padding: 20px;
+    border-radius: 6px;
+    margin-bottom: 25px;
+}
+
+.form-grid {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 12px;
+    margin-bottom: 15px;
+}
+
+.form-group {
+    display: flex;
+    flex-direction: column;
+}
+
+label {
+    font-size: 0.85em;
+    color: #b3b3b3;
+    margin-bottom: 6px;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+input,
+select {
+    padding: 10px 12px;
+    background-color: #3a3a3a;
+    border: 1px solid #4a4a4a;
+    border-radius: 4px;
+    color: #e5e5e5;
+    font-size: 0.95em;
+    transition: all 0.2s;
+}
+
+input:focus,
+select:focus {
+    outline: none;
+    border-color: #e50914;
+    background-color: #404040;
+}
+
+input::placeholder {
+    color: #6a6a6a;
+}
+
+input:invalid {
+    border-color: #e50914;
+}
+
+input:valid {
+    border-color: #46d369;
+}
+
+/* Boutons */
+.button-group {
+    display: flex;
+    gap: 10px;
+}
+
+button {
+    padding: 11px 24px;
+    border: none;
+    border-radius: 4px;
+    font-size: 0.95em;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.btn-search {
+    background-color: #e50914;
+    color: white;
+}
+
+.btn-search:hover {
+    background-color: #f40612;
+}
+
+.btn-reset {
+    background-color: #404040;
+    color: #e5e5e5;
+}
+
+.btn-reset:hover {
+    background-color: #505050;
+}
+
+.btn-reserve {
+    background-color: #46d369;
+    color: #000000;
+    padding: 8px 16px;
+    font-size: 0.85em;
+    font-weight: 700;
+}
+
+.btn-reserve:hover {
+    background-color: #5ae77d;
+}
+
+/* Revenus */
+.revenus-cell {
+    text-align: center;
+    font-weight: 600;
+}
+
+.revenus-amount {
+    color: #46d369;
+    font-size: 1.1em;
+    font-weight: 700;
+}
+
+.no-revenus {
+    color: #666;
+    font-style: italic;
+}
+
+/* Capacité */
+.capacite-cell {
+    text-align: center;
+    font-weight: 600;
+}
+
+.capacite-amount {
+    color: #ffa500;
+    font-size: 1.1em;
+    font-weight: 700;
+}
+
+/* Pied de table - Totaux */
+tfoot {
+    background-color: #2a2a2a;
+    border-top: 3px solid #e50914;
+}
+
+.totals-row {
+    font-size: 1.2em;
+}
+
+.totals-label {
+    text-align: right;
+    font-weight: 700;
+    color: #e50914;
+    padding-right: 20px !important;
+}
+
+.totals-revenus {
+    text-align: center;
+    color: #46d369;
+    font-size: 1.3em;
+}
+
+.totals-capacite {
+    text-align: center;
+    color: #ffa500;
+    font-size: 1.3em;
+}
+
+/* Info résultats */
+.results-info {
+    margin-bottom: 20px;
+    padding: 12px 16px;
+    background-color: #2a2a2a;
+    border-left: 3px solid #e50914;
+    border-radius: 4px;
+    font-size: 0.95em;
+}
+
+.results-info strong {
+    color: #ffffff;
+}
+
+/* Tableau */
+table {
+    width: 100%;
+    border-collapse: collapse;
+    background-color: #2a2a2a;
+    border-radius: 6px;
+    overflow: hidden;
+}
+
+thead {
+    background-color: #000000;
+}
+
+th {
+    padding: 14px 16px;
+    text-align: left;
+    font-weight: 600;
+    font-size: 0.85em;
+    color: #b3b3b3;
+    text-transform: uppercase;
+    letter-spacing: 0.8px;
+    border-bottom: 2px solid #e50914;
+}
+
+tbody tr {
+    border-bottom: 1px solid #3a3a3a;
+    transition: background-color 0.2s;
+}
+
+tbody tr:hover {
+    background-color: #333333;
+}
+
+tbody tr:last-child {
+    border-bottom: none;
+}
+
+td {
+    padding: 14px 16px;
+    font-size: 0.95em;
+}
+
+/* Badges */
+.badge {
+    display: inline-block;
+    padding: 4px 10px;
+    border-radius: 3px;
+    font-size: 0.8em;
+    font-weight: 600;
+    letter-spacing: 0.3px;
+}
+
+.badge-cinema {
+    background-color: #e50914;
+    color: white;
+}
+
+.badge-salle {
+    background-color: #46d369;
+    color: #000000;
+}
+
+.time-badge {
+    background-color: #ffa00a;
+    color: #000000;
+    padding: 5px 12px;
+    border-radius: 3px;
+    font-weight: 700;
+    font-size: 0.9em;
+}
+
+/* Sièges disponibles */
+.seats-info {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.seat-type {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 0.85em;
+}
+
+.seat-type-label {
+    color: #b3b3b3;
+    min-width: 70px;
+}
+
+.seat-count {
+    background-color: #3a3a3a;
+    padding: 2px 8px;
+    border-radius: 3px;
+    color: #46d369;
+    font-weight: 600;
+}
+
+.seat-count.low {
+    color: #ffa00a;
+}
+
+.seat-count.none {
+    color: #e50914;
+}
+
+/* Film title */
+.film-title {
+    font-weight: 600;
+    color: #ffffff;
+    font-size: 1.05em;
+}
+
+/* Message vide */
+.no-results {
+    text-align: center;
+    padding: 60px 20px;
+    color: #b3b3b3;
+    font-size: 1.1em;
+}
+
+.no-results-icon {
+    font-size: 3em;
+    margin-bottom: 15px;
+    opacity: 0.5;
+}
+
+/* Actions column */
+.actions-cell {
+    text-align: center;
+}

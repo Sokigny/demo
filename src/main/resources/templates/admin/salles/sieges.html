@@ -1,0 +1,267 @@
+<!DOCTYPE html>
+<html lang="fr" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Configuration des Sièges - Cinema Admin</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+    <link rel="stylesheet" th:href="@{/css/admin.css}">
+    <style>
+        .seat-grid {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            padding: 20px;
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: 8px;
+            overflow-x: auto;
+        }
+        
+        .seat-row {
+            display: flex;
+            gap: 8px;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .row-label {
+            width: 40px;
+            font-weight: bold;
+            text-align: center;
+            color: #e50914;
+            font-size: 14px;
+        }
+        
+        .seat {
+            width: 40px;
+            height: 40px;
+            border-radius: 6px 6px 0 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 11px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            position: relative;
+        }
+        
+        .seat.available {
+            background: #28a745;
+            border: 2px solid #1e7e34;
+            color: white;
+        }
+        
+        .seat.unavailable {
+            background: #6c757d;
+            border: 2px solid #495057;
+            color: white;
+            opacity: 0.6;
+        }
+        
+        .seat:hover {
+            transform: scale(1.15);
+            box-shadow: 0 4px 12px rgba(229, 9, 20, 0.4);
+            z-index: 10;
+        }
+        
+        .seat.unavailable:hover {
+            cursor: not-allowed;
+        }
+        
+        .screen {
+            width: 100%;
+            max-width: 800px;
+            height: 60px;
+            background: linear-gradient(to bottom, #e50914 0%, rgba(229, 9, 20, 0.3) 100%);
+            border-radius: 50% 50% 0 0 / 20px 20px 0 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+            font-size: 18px;
+            margin: 0 auto 40px;
+            box-shadow: 0 8px 25px rgba(229, 9, 20, 0.4);
+            letter-spacing: 3px;
+        }
+        
+        .legend-item .seat {
+            cursor: default;
+        }
+        
+        .legend-item .seat:hover {
+            transform: none;
+            box-shadow: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="">
+        <!-- Sidebar -->
+        <nav class="sidebar">
+            <div class="sidebar-header">
+                <div class="sidebar-brand">
+                    <i class="bi bi-film"></i>
+                    <span>Cinema Admin</span>
+                </div>
+                <button class="sidebar-toggle">
+                    <i class="bi bi-list"></i>
+                </button>
+            </div>
+            <nav>
+                <a th:href="@{/admin/dashboard}" class="nav-link">
+                    <i class="bi bi-speedometer2"></i>
+                    <span>Dashboard</span>
+                </a>
+                <a th:href="@{/admin/films}" class="nav-link">
+                    <i class="bi bi-camera-reels"></i>
+                    <span>Films</span>
+                </a>
+                <a th:href="@{/admin/salles}" class="nav-link active">
+                    <i class="bi bi-building"></i>
+                    <span>Salles</span>
+                </a>
+                <a th:href="@{/admin/seances}" class="nav-link">
+                    <i class="bi bi-calendar-event"></i>
+                    <span>Séances</span>
+                </a>
+            </nav>
+        </nav>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <div class="container-fluid">
+                <!-- Header -->
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <div>
+                        <h1>
+                            <i class="bi bi-grid-3x3 text-netflix-red me-2"></i>
+                            Configuration des Sièges
+                        </h1>
+                        <p class="text-muted mb-0">
+                            <span th:text="${salle.nom}">Salle</span> - 
+                            <i class="bi bi-building me-1"></i>
+                            <span th:text="${salle.cinema.nom}">Cinema</span>
+                        </p>
+                    </div>
+                    <a th:href="@{/admin/salles}" class="btn btn-outline-secondary">
+                        <i class="bi bi-arrow-left me-2"></i>Retour
+                    </a>
+                </div>
+
+                <!-- Statistics -->
+                <div class="row g-3 mb-4">
+                    <div class="col-md-4">
+                        <div class="stats-card">
+                            <div class="stats-icon">
+                                <i class="bi bi-grid-3x3"></i>
+                            </div>
+                            <div class="stats-info">
+                                <div class="stats-label">Total Sièges</div>
+                                <div class="stats-value" th:text="${#lists.size(sieges)}">0</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="stats-card">
+                            <div class="stats-icon" style="background: linear-gradient(135deg, #28a745, #20c997);">
+                                <i class="bi bi-check-circle"></i>
+                            </div>
+                            <div class="stats-info">
+                                <div class="stats-label">Disponibles</div>
+                                <div class="stats-value text-success" th:text="${#lists.size(sieges.?[etat == true])}">0</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="stats-card">
+                            <div class="stats-icon" style="background: linear-gradient(135deg, #dc3545, #c82333);">
+                                <i class="bi bi-x-circle"></i>
+                            </div>
+                            <div class="stats-info">
+                                <div class="stats-label">Indisponibles</div>
+                                <div class="stats-value text-danger" th:text="${#lists.size(sieges.?[etat == false])}">0</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Légende -->
+                <div class="card mb-4">
+                    <div class="card-body">
+                        <div class="d-flex gap-4 align-items-center flex-wrap">
+                            <h6 class="mb-0 me-3"><i class="bi bi-info-circle me-2"></i>Légende :</h6>
+                            <div class="d-flex align-items-center legend-item me-4">
+                                <div class="seat available me-2"></div>
+                                <span><strong>Disponible</strong> - Siège libre</span>
+                            </div>
+                            <div class="d-flex align-items-center legend-item">
+                                <div class="seat unavailable me-2"></div>
+                                <span><strong>Indisponible</strong> - Siège désactivé</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Plan de la salle -->
+                <div class="card">
+                    <div class="card-body p-4">
+                        <div class="text-center">
+                            <div class="screen">
+                                <i class="bi bi-tv me-2"></i>ÉCRAN
+                            </div>
+                        </div>
+
+                        <div th:if="${!#lists.isEmpty(sieges)}" class="seat-grid">
+                            <!-- Afficher les sièges groupés par rangée -->
+                            <div th:each="entry : ${siegesParRangee}" class="seat-row">
+                                <div class="row-label" th:text="${entry.key}">A</div>
+                                <div th:each="siege : ${entry.value}" 
+                                     class="seat"
+                                     th:classappend="${siege.etat ? 'available' : 'unavailable'}"
+                                     th:attr="data-id=${siege.id}, data-row=${entry.key}, data-numero=${siege.numero}"
+                                     th:title="'Rangée ' + ${entry.key} + ' - Siège ' + ${siege.numero}"
+                                     th:text="${siege.numero}">
+                                    1
+                                </div>
+                            </div>
+                        </div>
+
+                        <div th:if="${#lists.isEmpty(sieges)}" class="text-center py-5">
+                            <i class="bi bi-inbox display-1 text-muted d-block mb-3"></i>
+                            <h5 class="text-muted">Aucun siège configuré pour cette salle</h5>
+                            <p class="text-muted">Utilisez le formulaire de configuration pour générer automatiquement les sièges</p>
+                            <a th:href="@{/admin/salles/edit/{id}(id=${salle.id})}" class="btn btn-netflix mt-3">
+                                <i class="bi bi-gear me-2"></i>Configurer les Sièges
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script th:src="@{/js/admin.js}"></script>
+    
+    <script>
+        // Interaction avec les sièges
+        document.querySelectorAll('.seat').forEach(seat => {
+            seat.addEventListener('click', function() {
+                if (this.classList.contains('unavailable')) {
+                    return; // Ne rien faire pour les sièges indisponibles
+                }
+                
+                const seatId = this.getAttribute('data-id');
+                const row = this.getAttribute('data-row');
+                const numero = this.getAttribute('data-numero');
+                
+                // Afficher les informations du siège
+                alert(`Siège sélectionné:\n\nRangée: ${row}\nNuméro: ${numero}\nID: ${seatId}\n\nFonctionnalité de modification à venir...`);
+            });
+        });
+    </script>
+</body>
+</html>

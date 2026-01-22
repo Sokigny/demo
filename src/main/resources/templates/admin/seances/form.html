@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title th:text="${seance.id != null ? 'Modifier la Séance' : 'Nouvelle Séance'}">Séance - Admin</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+    <link rel="stylesheet" th:href="@{/css/admin.css}">
+    <style>
+        .step-indicator {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 30px;
+        }
+        .step {
+            display: flex;
+            align-items: center;
+            padding: 10px 20px;
+            border-radius: 30px;
+            background: #e0e0e0;
+            margin: 0 10px;
+        }
+        .step.active {
+            background: var(--netflix-red);
+            color: white;
+        }
+        .step.completed {
+            background: #28a745;
+            color: white;
+        }
+        .step i {
+            margin-right: 8px;
+        }
+        .arrow {
+            color: #999;
+            font-size: 24px;
+            margin: 0 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="">
+        <!-- Sidebar -->
+        <nav class="sidebar">
+            <div class="p-3">
+                <h4 class="text-netflix-red mb-4">
+                    <i class="bi bi-film"></i> Cinema Admin
+                </h4>
+                <ul class="nav flex-column">
+                    <li class="nav-item mb-2">
+                        <a th:href="@{/admin/dashboard}" class="nav-link">
+                            <i class="bi bi-speedometer2"></i> Dashboard
+                        </a>
+                    </li>
+                    <li class="nav-item mb-2">
+                        <a th:href="@{/admin/films}" class="nav-link">
+                            <i class="bi bi-camera-reels"></i> Films
+                        </a>
+                    </li>
+                    <li class="nav-item mb-2">
+                        <a th:href="@{/admin/salles}" class="nav-link">
+                            <i class="bi bi-building"></i> Salles
+                        </a>
+                    </li>
+                    <li class="nav-item mb-2">
+                        <a th:href="@{/admin/seances}" class="nav-link active">
+                            <i class="bi bi-calendar-event"></i> Séances
+                        </a>
+                    </li>
+                </ul>
+            </div>
+        </nav>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <div class="container-fluid">
+                <!-- Step Indicator (only for new seance) -->
+                <div class="step-indicator" th:if="${seance.id == null}">
+                    <div class="step active">
+                        <i class="bi bi-1-circle"></i>
+                        Informations
+                    </div>
+                    <!-- <span class="arrow">→</span>
+                    <div class="step">
+                        <i class="bi bi-2-circle"></i>
+                        Tarifs
+                    </div> -->
+                </div>
+
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <h1>
+                        <i class="bi bi-calendar-event text-netflix-red"></i> 
+                        <span th:text="${seance.id != null ? 'Modifier la Séance' : 'Nouvelle Séance - Étape 1'}">Nouvelle Séance</span>
+                    </h1>
+                    <a th:href="@{/admin/seances}" class="btn btn-outline-secondary">
+                        <i class="bi bi-arrow-left"></i> Retour
+                    </a>
+                </div>
+
+                <!-- Messages Flash -->
+                <div th:if="${error}" class="alert alert-danger alert-dismissible fade show" role="alert">
+                    <i class="bi bi-exclamation-triangle"></i> <span th:text="${error}"></span>
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+
+                <!-- Formulaire -->
+                <div class="card">
+                    <div class="card-body">
+                    <form th:action="${seance.id != null ? '/admin/seances/update/' + seance.id : '/admin/seances'}" 
+                          th:object="${seance}" 
+                          method="post"
+                          id="seanceForm">
+                        
+                        <div class="row">
+                            <!-- Film -->
+                            <div class="col-md-6 mb-3">
+                                <label for="film" class="form-label">Film *</label>
+                                <select th:field="*{film.id}" class="form-select" id="film" required>
+                                    <option value="">Sélectionner un film</option>
+                                    <option th:each="film : ${films}" 
+                                            th:value="${film.id}" 
+                                            th:text="${film.titre + ' (' + film.duree + ' min)'}"
+                                            th:data-duree="${film.duree}">
+                                        Film
+                                    </option>
+                                </select>
+                            </div>
+
+                            <!-- Salle -->
+                            <div class="col-md-6 mb-3">
+                                <label for="salle" class="form-label">Salle *</label>
+                                <select th:field="*{salle.id}" class="form-select" id="salle" required>
+                                    <option value="">Sélectionner une salle</option>
+                                    <option th:each="salle : ${salles}" 
+                                            th:value="${salle.id}" 
+                                            th:text="${salle.nom + ' - Capacité: ' + salle.capacite}">
+                                        Salle
+                                    </option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <!-- Date -->
+                            <div class="col-md-4 mb-3">
+                                <label for="dateSeance" class="form-label">Date *</label>
+                                <input type="date" 
+                                       th:field="*{dateSeance}" 
+                                       class="form-control" 
+                                       id="dateSeance" 
+                                       required>
+                            </div>
+
+                            <!-- Heure Début -->
+                            <div class="col-md-4 mb-3">
+                                <label for="heureDebut" class="form-label">Heure de début *</label>
+                                <input type="time" 
+                                       th:field="*{heureDebut}" 
+                                       class="form-control" 
+                                       id="heureDebut" 
+                                       required>
+                            </div>
+
+                            <!-- Heure Fin (calculée automatiquement) -->
+                            <div class="col-md-4 mb-3">
+                                <label for="heureFin" class="form-label">
+                                    Heure de fin 
+                                    <small class="text-muted">(calculée automatiquement)</small>
+                                </label>
+                                <input type="time" 
+                                       th:field="*{heureFin}" 
+                                       class="form-control" 
+                                       id="heureFin" 
+                                       required>
+                            </div>
+                        </div>
+
+                        <!-- Durée affichée -->
+                        <div class="row mb-3">
+                            <div class="col-md-12">
+                                <div class="alert alert-info" id="dureeInfo" style="display: none;">
+                                    <i class="bi bi-clock"></i> 
+                                    Durée de la séance : <strong id="dureeText">0</strong> minutes
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Boutons -->
+                        <div class="d-flex justify-content-end gap-2">
+                            <a th:href="@{/admin/seances}" class="btn btn-secondary">
+                                <i class="bi bi-x-circle"></i> Annuler
+                            </a>
+                            <button type="submit" class="btn btn-netflix">
+                                <i th:class="${seance.id != null ? 'bi bi-check-circle' : 'bi bi-arrow-right'}"></i>
+                                <span th:text="${seance.id != null ? 'Mettre à jour' : 'Enregistrer'}">Enregistrer</span>
+                            </button>
+                        </div>
+                    </form>                        </div>
+                    </div>                </div>
+            </div>
+        </main>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script th:src="@{/js/admin.js}"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const filmSelect = document.getElementById('film');
+            const heureDebutInput = document.getElementById('heureDebut');
+            const heureFinInput = document.getElementById('heureFin');
+            const dureeInfo = document.getElementById('dureeInfo');
+            const dureeText = document.getElementById('dureeText');
+
+            // Calculer l'heure de fin automatiquement
+            function calculateEndTime() {
+                const selectedFilm = filmSelect.options[filmSelect.selectedIndex];
+                const dureeMinutes = selectedFilm ? parseInt(selectedFilm.getAttribute('data-duree')) : 0;
+                const heureDebut = heureDebutInput.value;
+
+                if (dureeMinutes && heureDebut) {
+                    // Convertir l'heure de début en minutes
+                    const [hours, minutes] = heureDebut.split(':').map(Number);
+                    const totalMinutes = hours * 60 + minutes;
+                    
+                    // Ajouter la durée du film
+                    const endMinutes = totalMinutes + dureeMinutes;
+                    
+                    // Convertir en heures et minutes
+                    const endHours = Math.floor(endMinutes / 60) % 24;
+                    const endMins = endMinutes % 60;
+                    
+                    // Formatter en HH:MM
+                    const endTime = `${String(endHours).padStart(2, '0')}:${String(endMins).padStart(2, '0')}`;
+                    heureFinInput.value = endTime;
+
+                    // Afficher la durée
+                    dureeText.textContent = dureeMinutes;
+                    dureeInfo.style.display = 'block';
+                } else {
+                    heureFinInput.value = '';
+                    dureeInfo.style.display = 'none';
+                }
+            }
+
+            // Écouter les changements
+            filmSelect.addEventListener('change', calculateEndTime);
+            heureDebutInput.addEventListener('change', calculateEndTime);
+
+            // Calculer au chargement si les valeurs sont déjà présentes
+            calculateEndTime();
+        });
+    </script>
+</body>
+</html>
