@@ -97,15 +97,15 @@ public class Remise {
             return prixOriginal;
         }
         int prixFinal = prixOriginal - (prixOriginal * montant / 100);
-        if(montant == 33){
-            prixFinal = 20000;
-        }
-        if(montant == 25){
-            prixFinal = 30000;
-        }
-        if(montant == 10){
-            prixFinal = 45000;
-        }
+        // if(montant == 33){
+        //     prixFinal = 20000;
+        // }
+        // if(montant == 25){
+        //     prixFinal = 30000;
+        // }
+        // if(montant == 10){
+        //     prixFinal = 45000;
+        // }
         return Math.max(0, prixFinal); // Le prix ne peut pas être négatif
     }
 

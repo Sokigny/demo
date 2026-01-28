@@ -40,6 +40,25 @@ CREATE TABLE type_siege (
     nom VARCHAR(255) NOT NULL
 );
 
+-- Table des types de personne
+CREATE TABLE type_personne (
+    id SERIAL PRIMARY KEY,
+    nom VARCHAR(255) NOT NULL,
+    age_min INTEGER,
+    age_max INTEGER
+);
+
+-- Table des tarifs par type de personne
+CREATE TABLE tarif (
+    id SERIAL PRIMARY KEY,
+    typePersonne_id INTEGER NOT NULL,
+    typeSiege_id INTEGER NOT NULL,
+    montant INTEGER NOT NULL,
+    pourcentage DECIMAL(5,2),
+    FOREIGN KEY (typePersonne_id) REFERENCES type_personne(id),
+    FOREIGN KEY (typeSiege_id) REFERENCES type_siege(id)
+);
+
 -- Table des tarifs par séance et type de siège
 CREATE TABLE seance_tarifs (
     id SERIAL PRIMARY KEY,

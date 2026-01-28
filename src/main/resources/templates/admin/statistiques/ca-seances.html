@@ -1,0 +1,478 @@
+<!doctype html>
+<html lang="fr" xmlns:th="http://www.thymeleaf.org">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Statistiques CA par Séance - Cinema Admin</title>
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+    />
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css"
+    />
+    <link rel="stylesheet" th:href="@{/css/admin.css}" />
+  </head>
+  <body>
+    <div class="">
+      <!-- Sidebar -->
+      <nav class="sidebar">
+        <div class="sidebar-header">
+          <div class="sidebar-brand">
+            <i class="bi bi-film"></i>
+            <span>Cinema Admin</span>
+          </div>
+          <button class="sidebar-toggle">
+            <i class="bi bi-list"></i>
+          </button>
+        </div>
+        <nav>
+          <a th:href="@{/admin/dashboard}" class="nav-link">
+            <i class="bi bi-speedometer2"></i>
+            <span>Dashboard</span>
+          </a>
+          <a th:href="@{/admin/films}" class="nav-link">
+            <i class="bi bi-camera-reels"></i>
+            <span>Films</span>
+          </a>
+          <a th:href="@{/admin/salles}" class="nav-link">
+            <i class="bi bi-building"></i>
+            <span>Salles</span>
+          </a>
+          <a th:href="@{/admin/seances}" class="nav-link">
+            <i class="bi bi-calendar-event"></i>
+            <span>Séances</span>
+          </a>
+          <a th:href="@{/admin/tarifs}" class="nav-link">
+            <i class="bi bi-currency-dollar"></i>
+            <span>Tarifs</span>
+          </a>
+          <a th:href="@{/admin/types-personne}" class="nav-link">
+            <i class="bi bi-people"></i>
+            <span>Types de Personne</span>
+          </a>
+          <a th:href="@{/admin/societes}" class="nav-link">
+            <i class="bi bi-building"></i>
+            <span>Sociétés</span>
+          </a>
+          <a th:href="@{/admin/publicites}" class="nav-link">
+            <i class="bi bi-megaphone"></i>
+            <span>Publicités</span>
+          </a>
+          <a th:href="@{/admin/paiements}" class="nav-link">
+            <i class="bi bi-cash-coin"></i>
+            <span>Paiements</span>
+          </a>
+          <a th:href="@{/admin/statistiques}" class="nav-link active">
+            <i class="bi bi-graph-up"></i>
+            <span>Statistiques</span>
+          </a>
+        </nav>
+      </nav>
+
+      <!-- Main Content -->
+      <main class="main-content">
+        <div class="container-fluid">
+          <!-- Header -->
+          <div class="d-flex justify-content-between align-items-center mb-4">
+            <h1>
+              <i class="bi bi-calendar-event text-netflix-red"></i> Chiffre
+              d'Affaires par Séance
+            </h1>
+            <a
+              th:href="@{/admin/statistiques}"
+              class="btn btn-outline-secondary"
+            >
+              <i class="bi bi-megaphone"></i> CA Publicités
+            </a>
+          </div>
+
+          <!-- Filtres -->
+          <div class="card mb-4">
+            <div class="card-body">
+              <h5 class="card-title mb-3">
+                <i class="bi bi-funnel"></i> Filtres
+              </h5>
+              <form
+                th:action="@{/admin/statistiques/ca-seances/calculate}"
+                method="get"
+              >
+                <div class="row">
+                  <div class="col-md-3">
+                    <label for="societeId" class="form-label"
+                      >Société (publicités)</label
+                    >
+                    <select class="form-select" id="societeId" name="societeId">
+                      <option value="">Toutes les sociétés</option>
+                      <option
+                        th:each="societe : ${societes}"
+                        th:value="${societe.id}"
+                        th:text="${societe.nom}"
+                        th:selected="${societeId != null && societeId == societe.id}"
+                      ></option>
+                    </select>
+                  </div>
+
+                  <div class="col-md-3">
+                    <label for="seanceId" class="form-label">Séance</label>
+                    <select class="form-select" id="seanceId" name="seanceId">
+                      <option value="">Toutes les séances</option>
+                      <option
+                        th:each="seance : ${seances}"
+                        th:value="${seance.id}"
+                        th:text="${seance.film.titre + ' - ' + seance.heureDebut}"
+                        th:selected="${seanceId != null && seanceId == seance.id}"
+                      ></option>
+                    </select>
+                  </div>
+
+                  <!-- Option 1: Par mois -->
+                  <div class="col-md-3">
+                    <label for="mois" class="form-label">Mois</label>
+                    <select class="form-select" id="mois" name="mois">
+                      <option value="">--</option>
+                      <option
+                        value="1"
+                        th:selected="${mois != null && mois == 1}"
+                      >
+                        Janvier
+                      </option>
+                      <option
+                        value="2"
+                        th:selected="${mois != null && mois == 2}"
+                      >
+                        Février
+                      </option>
+                      <option
+                        value="3"
+                        th:selected="${mois != null && mois == 3}"
+                      >
+                        Mars
+                      </option>
+                      <option
+                        value="4"
+                        th:selected="${mois != null && mois == 4}"
+                      >
+                        Avril
+                      </option>
+                      <option
+                        value="5"
+                        th:selected="${mois != null && mois == 5}"
+                      >
+                        Mai
+                      </option>
+                      <option
+                        value="6"
+                        th:selected="${mois != null && mois == 6}"
+                      >
+                        Juin
+                      </option>
+                      <option
+                        value="7"
+                        th:selected="${mois != null && mois == 7}"
+                      >
+                        Juillet
+                      </option>
+                      <option
+                        value="8"
+                        th:selected="${mois != null && mois == 8}"
+                      >
+                        Août
+                      </option>
+                      <option
+                        value="9"
+                        th:selected="${mois != null && mois == 9}"
+                      >
+                        Septembre
+                      </option>
+                      <option
+                        value="10"
+                        th:selected="${mois != null && mois == 10}"
+                      >
+                        Octobre
+                      </option>
+                      <option
+                        value="11"
+                        th:selected="${mois != null && mois == 11}"
+                      >
+                        Novembre
+                      </option>
+                      <option
+                        value="12"
+                        th:selected="${mois != null && mois == 12}"
+                      >
+                        Décembre
+                      </option>
+                    </select>
+                  </div>
+
+                  <div class="col-md-3">
+                    <label for="annee" class="form-label">Année</label>
+                    <input
+                      type="number"
+                      class="form-control"
+                      id="annee"
+                      name="annee"
+                      th:value="${annee}"
+                      placeholder="2025"
+                    />
+                  </div>
+                </div>
+
+                <div class="row mt-3">
+                  <!-- Option 2: Par période -->
+                  <div class="col-md-3">
+                    <label for="dateDebut" class="form-label">Date début</label>
+                    <input
+                      type="date"
+                      class="form-control"
+                      id="dateDebut"
+                      name="dateDebut"
+                      th:value="${dateDebut}"
+                    />
+                  </div>
+
+                  <div class="col-md-3">
+                    <label for="dateFin" class="form-label">Date fin</label>
+                    <input
+                      type="date"
+                      class="form-control"
+                      id="dateFin"
+                      name="dateFin"
+                      th:value="${dateFin}"
+                    />
+                  </div>
+
+                  <div class="col-md-6 align-items-end">
+                    <button type="submit" class="btn btn-netflix col-md-6">
+                      <i class="bi bi-search"></i> Rechercher
+                    </button>
+                    <a
+                      th:href="@{/admin/statistiques/ca-seances}"
+                      class="btn btn-outline-secondary col-md-6"
+                    >
+                      <i class="bi bi-x-circle"></i> Réinitialiser
+                    </a>
+                  </div>
+                </div>
+              </form>
+            </div>
+          </div>
+
+          <!-- Résultats -->
+          <div th:if="${statistiques != null}">
+            <!-- KPI Cards -->
+            <div class="row mb-4">
+              <div class="col-md-2">
+                <div class="card bg-success text-white">
+                  <div class="card-body">
+                    <h6 class="card-title">
+                      <i class="bi bi-ticket-detailed"></i> Revenus Billets
+                    </h6>
+                    <h3
+                      th:text="${#numbers.formatDecimal(statistiques.totalBillets, 0, 'COMMA', 2, 'POINT')} + ' Ar'"
+                    >
+                      0 Ar
+                    </h3>
+                  </div>
+                </div>
+              </div>
+              <div class="col-md-2">
+                <div class="card bg-info text-white">
+                  <div class="card-body">
+                    <h6 class="card-title">
+                      <i class="bi bi-megaphone"></i> CA Publicités
+                    </h6>
+                    <h3
+                      th:text="${#numbers.formatDecimal(statistiques.totalPublicites, 0, 'COMMA', 2, 'POINT')} + ' Ar'"
+                    >
+                      0 Ar
+                    </h3>
+                  </div>
+                </div>
+              </div>
+              <div class="col-md-2">
+                <div class="card bg-secondary text-white">
+                  <div class="card-body">
+                    <h6 class="card-title">
+                      <i class="bi bi-cash"></i> Paiements Pub.
+                    </h6>
+                    <h3
+                      th:text="${#numbers.formatDecimal(statistiques.totalPaiements, 0, 'COMMA', 2, 'POINT')} + ' Ar'"
+                    >
+                      0 Ar
+                    </h3>
+                  </div>
+                </div>
+              </div>
+              <div class="col-md-2">
+                <div class="card bg-warning text-dark">
+                  <div class="card-body">
+                    <h6 class="card-title">
+                      <i class="bi bi-exclamation-triangle"></i> Reste à Payer
+                    </h6>
+                    <h3
+                      th:text="${#numbers.formatDecimal(statistiques.totalResteAPayer, 0, 'COMMA', 2, 'POINT')} + ' Ar'"
+                    >
+                      0 Ar
+                    </h3>
+                  </div>
+                </div>
+              </div>
+              <div class="col-md-2">
+                <div class="card bg-primary text-white">
+                  <div class="card-body">
+                    <h6 class="card-title">
+                      <i class="bi bi-cash-stack"></i> CA Total
+                    </h6>
+                    <h3
+                      th:text="${#numbers.formatDecimal(statistiques.totalCA, 0, 'COMMA', 2, 'POINT')} + ' Ar'"
+                    >
+                      0 Ar
+                    </h3>
+                  </div>
+                </div>
+              </div>
+              <div class="col-md-2">
+                <div class="card bg-dark text-white">
+                  <div class="card-body">
+                    <h6 class="card-title">
+                      <i class="bi bi-calendar-event"></i> Nb Séances
+                    </h6>
+                    <h3 th:text="${statistiques.nombreSeances}">0</h3>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Tableau des séances -->
+            <div class="card">
+              <div class="card-body">
+                <h5 class="card-title mb-3">
+                  <i class="bi bi-table"></i> Détail par Séance
+                </h5>
+
+                <div class="table-responsive">
+                  <table class="table table-hover">
+                    <thead class="table-dark">
+                      <tr>
+                        <th>Film</th>
+                        <th>Date Diffusion</th>
+                        <th>Heure de Diffusion</th>
+                        <th class="text-end">Montant Billets</th>
+                        <th class="text-end">CA Publicités</th>
+                        <th class="text-end">Paiements Pub.</th>
+                        <th class="text-end">Reste à Payer</th>
+                        <th class="text-end">CA Total</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <tr th:each="detail : ${statistiques.details}">
+                        <td>
+                          <strong th:text="${detail.film}">Film</strong>
+                        </td>
+                        <td
+                          th:text="${#temporals.format(detail.dateSeance, 'dd/MM/yyyy')}"
+                        >
+                          01/12/2025
+                        </td>
+                        <td th:text="${detail.heureDebut}">19:00</td>
+                        <td class="text-end">
+                          <span
+                            th:text="${#numbers.formatDecimal(detail.revenuBillets, 0, 'COMMA', 2, 'POINT')} + ' Ar'"
+                            >0.00 Ar</span
+                          >
+                        </td>
+                        <td class="text-end">
+                          <span
+                            th:text="${#numbers.formatDecimal(detail.revenuPublicites, 0, 'COMMA', 2, 'POINT')} + ' Ar'"
+                            >0.00 Ar</span
+                          >
+                        </td>
+                        <td class="text-end text-success">
+                          <span
+                            th:text="${#numbers.formatDecimal(detail.paiementsPublicites, 0, 'COMMA', 2, 'POINT')} + ' Ar'"
+                            >0.00 Ar</span
+                          >
+                        </td>
+                        <td
+                          class="text-end"
+                          th:classappend="${detail.resteAPayerPublicites > 0} ? 'text-warning' : 'text-success'"
+                        >
+                          <strong
+                            th:text="${#numbers.formatDecimal(detail.resteAPayerPublicites, 0, 'COMMA', 2, 'POINT')} + ' Ar'"
+                            >0.00 Ar</strong
+                          >
+                        </td>
+                        <td class="text-end">
+                          <strong
+                            th:text="${#numbers.formatDecimal(detail.caTotal, 0, 'COMMA', 2, 'POINT')} + ' Ar'"
+                            >0.00 Ar</strong
+                          >
+                        </td>
+                      </tr>
+
+                      <!-- Ligne vide si aucune donnée -->
+                      <tr th:if="${#lists.isEmpty(statistiques.details)}">
+                        <td colspan="8" class="text-center text-muted">
+                          <i class="bi bi-inbox"></i> Aucune séance trouvée pour
+                          les critères sélectionnés
+                        </td>
+                      </tr>
+                    </tbody>
+                    <tfoot class="table-secondary">
+                      <tr>
+                        <th colspan="3" class="text-end">TOTAL</th>
+                        <th class="text-end">
+                          <strong
+                            th:text="${#numbers.formatDecimal(statistiques.totalBillets, 0, 'COMMA', 2, 'POINT')} + ' Ar'"
+                            >0.00 Ar</strong
+                          >
+                        </th>
+                        <th class="text-end">
+                          <strong
+                            th:text="${#numbers.formatDecimal(statistiques.totalPublicites, 0, 'COMMA', 2, 'POINT')} + ' Ar'"
+                            >0.00 Ar</strong
+                          >
+                        </th>
+                        <th class="text-end text-success">
+                          <strong
+                            th:text="${#numbers.formatDecimal(statistiques.totalPaiements, 0, 'COMMA', 2, 'POINT')} + ' Ar'"
+                            >0.00 Ar</strong
+                          >
+                        </th>
+                        <th class="text-end text-warning">
+                          <strong
+                            th:text="${#numbers.formatDecimal(statistiques.totalResteAPayer, 0, 'COMMA', 2, 'POINT')} + ' Ar'"
+                            >0.00 Ar</strong
+                          >
+                        </th>
+                        <th class="text-end">
+                          <strong
+                            th:text="${#numbers.formatDecimal(statistiques.totalCA, 0, 'COMMA', 2, 'POINT')} + ' Ar'"
+                            >0.00 Ar</strong
+                          >
+                        </th>
+                      </tr>
+                    </tfoot>
+                  </table>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Message si pas encore de recherche -->
+          <div th:if="${statistiques == null}" class="alert alert-info">
+            <i class="bi bi-info-circle"></i>
+            Sélectionnez des critères de recherche et cliquez sur "Rechercher"
+            pour afficher les statistiques par séance.
+          </div>
+        </div>
+      </main>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script th:src="@{/js/admin.js}"></script>
+  </body>
+</html>

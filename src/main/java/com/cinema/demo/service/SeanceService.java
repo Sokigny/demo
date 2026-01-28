@@ -30,6 +30,12 @@ public class SeanceService {
     @Autowired
     private TypeSiegeRepository typeSiegeRepository;
 
+    @Autowired
+    private PubliciteRepository publiciteRepository;
+
+    @Autowired
+    private PaiementDetailService paiementDetailService;
+
     // Create
     public Seance createSeance(Seance seance) {
         if (seance.getFilm() == null || seance.getFilm().getId() == null) {
@@ -261,38 +267,6 @@ public class SeanceService {
     }
 
     /**
-     * Retourne les tarifs par défaut suggérés (en euros ou autre devise
-     * internationale)
-     * Clé: ID du type de siège, Valeur: montant suggéré
-     */
-    public Map<Integer, Integer> getTarifsParDefaut() {
-        Map<Integer, Integer> tarifsDefaut = new HashMap<>();
-        List<TypeSiege> allTypes = typeSiegeRepository.findAll();
-
-        for (TypeSiege type : allTypes) {
-            // Tarifs standards par défaut
-            switch (type.getNom().toLowerCase()) {
-                case "standard":
-                case "normal":
-                    tarifsDefaut.put(type.getId(), 10000);
-                    break;
-                case "vip":
-                case "premium":
-                    tarifsDefaut.put(type.getId(), 20000);
-                    break;
-                case "economique":
-                case "economy":
-                    tarifsDefaut.put(type.getId(), 7000);
-                    break;
-                default:
-                    tarifsDefaut.put(type.getId(), 12000);
-            }
-        }
-
-        return tarifsDefaut;
-    }
-
-    /**
      * Enregistre les tarifs pour une séance
      */
 
@@ -358,5 +332,105 @@ public class SeanceService {
         // Les prix sont maintenant gérés au niveau de TypeSiege
         // Cette méthode ne fait plus rien
         throw new UnsupportedOperationException("Les prix sont maintenant définis au niveau du TypeSiege. Utilisez TypeSiegeService pour modifier les prix.");
+    }
+
+    /**
+     * Calcule le CA par séance avec les revenus des billets et des publicités
+     */
+    public Map<String, Object> calculateCAParSeance(Integer societeId, Integer seanceId, LocalDate dateDebut, LocalDate dateFin) {
+        Map<String, Object> result = new HashMap<>();
+        
+        // Récupérer toutes les séances selon les filtres
+        List<Seance> seances;
+        if (seanceId != null) {
+            seances = seanceRepository.findById(seanceId)
+                    .map(Collections::singletonList)
+                    .orElse(Collections.emptyList());
+        } else if (dateDebut != null && dateFin != null) {
+            seances = seanceRepository.findByDateSeanceBetween(dateDebut, dateFin);
+        } else {
+            seances = seanceRepository.findAll();
+        }
+        
+        // Trier par date
+        seances.sort(Comparator.comparing(Seance::getDateSeance)
+                .thenComparing(Seance::getHeureDebut));
+        
+        List<Map<String, Object>> details = new ArrayList<>();
+        double totalBillets = 0.0;
+        double totalPublicites = 0.0;
+        double totalCA = 0.0;
+        double totalPaiements = 0.0;
+        double totalResteAPayer = 0.0;
+        
+        for (Seance seance : seances) {
+            // Calculer le revenu des billets vendus
+            List<Billet> billets = billetRepository.findBySeanceId(seance.getId());
+            double revenuBillets = billets.stream()
+                    .mapToDouble(b -> b.getPrix() != null ? b.getPrix() : 0.0)
+                    .sum();
+            
+            // Calculer le revenu des publicités pour cette séance
+            List<Publicite> publicites = publiciteRepository.findBySeanceId(seance.getId());
+            
+            // Filtrer par société si spécifié
+            if (societeId != null) {
+                publicites = publicites.stream()
+                        .filter(p -> p.getSociete() != null && p.getSociete().getId().equals(societeId))
+                        .collect(java.util.stream.Collectors.toList());
+            }
+            
+            double revenuPublicites = publicites.stream()
+                    .mapToDouble(p -> {
+                        if (p.getSociete() == null || p.getLongueur() == null || p.getNombre() == null) {
+                            return 0.0;
+                        }
+                        double montantParMin = p.getSociete().getMontantParMin() != null ? p.getSociete().getMontantParMin() : 0.0;
+                        double longueur = p.getLongueur();
+                        int nombre = p.getNombre();
+                        return montantParMin * longueur * nombre;
+                    })
+                    .sum();
+            
+            double caTotal = revenuBillets + revenuPublicites;
+            
+            // Calculer les paiements directs pour cette séance depuis paiement_detail
+            double paiementsSeance = paiementDetailService.getDetailsBySeance(seance.getId()).stream()
+                    .filter(d -> societeId == null || (d.getPaiement().getSociete() != null && 
+                                 d.getPaiement().getSociete().getId().equals(societeId)))
+                    .mapToDouble(d -> d.getMontant() != null ? d.getMontant() : 0.0)
+                    .sum();
+            
+            double resteAPayerSeance = revenuPublicites - paiementsSeance;
+            
+            // Ajouter les détails de la séance
+            Map<String, Object> detail = new HashMap<>();
+            detail.put("seanceId", seance.getId());
+            detail.put("film", seance.getFilm().getTitre());
+            detail.put("dateSeance", seance.getDateSeance());
+            detail.put("heureDebut", seance.getHeureDebut());
+            detail.put("revenuBillets", revenuBillets);
+            detail.put("revenuPublicites", revenuPublicites);
+            detail.put("paiementsPublicites", paiementsSeance);
+            detail.put("resteAPayerPublicites", resteAPayerSeance);
+            detail.put("caTotal", caTotal);
+            details.add(detail);
+            
+            totalBillets += revenuBillets;
+            totalPublicites += revenuPublicites;
+            totalPaiements += paiementsSeance;
+            totalResteAPayer += resteAPayerSeance;
+            totalCA += caTotal;
+        }
+        
+        result.put("details", details);
+        result.put("totalBillets", totalBillets);
+        result.put("totalPublicites", totalPublicites);
+        result.put("totalPaiements", totalPaiements);
+        result.put("totalResteAPayer", totalResteAPayer);
+        result.put("totalCA", totalCA);
+        result.put("nombreSeances", seances.size());
+        
+        return result;
     }
 }

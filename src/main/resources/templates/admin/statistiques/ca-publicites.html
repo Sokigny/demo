@@ -1,0 +1,606 @@
+<!doctype html>
+<html lang="fr" xmlns:th="http://www.thymeleaf.org">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Statistiques CA Publicités - Cinema Admin</title>
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+    />
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css"
+    />
+    <link rel="stylesheet" th:href="@{/css/admin.css}" />
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  </head>
+  <body>
+    <div class="">
+      <!-- Sidebar -->
+      <nav class="sidebar">
+        <div class="sidebar-header">
+          <div class="sidebar-brand">
+            <i class="bi bi-film"></i>
+            <span>Cinema Admin</span>
+          </div>
+          <button class="sidebar-toggle">
+            <i class="bi bi-list"></i>
+          </button>
+        </div>
+        <nav>
+          <a th:href="@{/admin/dashboard}" class="nav-link">
+            <i class="bi bi-speedometer2"></i>
+            <span>Dashboard</span>
+          </a>
+          <a th:href="@{/admin/films}" class="nav-link">
+            <i class="bi bi-camera-reels"></i>
+            <span>Films</span>
+          </a>
+          <a th:href="@{/admin/salles}" class="nav-link">
+            <i class="bi bi-building"></i>
+            <span>Salles</span>
+          </a>
+          <a th:href="@{/admin/seances}" class="nav-link">
+            <i class="bi bi-calendar-event"></i>
+            <span>Séances</span>
+          </a>
+          <a th:href="@{/admin/tarifs}" class="nav-link">
+            <i class="bi bi-currency-dollar"></i>
+            <span>Tarifs</span>
+          </a>
+          <a th:href="@{/admin/types-personne}" class="nav-link">
+            <i class="bi bi-people"></i>
+            <span>Types de Personne</span>
+          </a>
+          <a th:href="@{/admin/societes}" class="nav-link">
+            <i class="bi bi-building"></i>
+            <span>Sociétés</span>
+          </a>
+          <a th:href="@{/admin/publicites}" class="nav-link">
+            <i class="bi bi-megaphone"></i>
+            <span>Publicités</span>
+          </a>
+          <a th:href="@{/admin/paiements}" class="nav-link">
+            <i class="bi bi-cash-coin"></i>
+            <span>Paiements</span>
+          </a>
+          <a th:href="@{/admin/statistiques}" class="nav-link active">
+            <i class="bi bi-graph-up"></i>
+            <span>Statistiques</span>
+          </a>
+        </nav>
+      </nav>
+
+      <!-- Main Content -->
+      <main class="main-content">
+        <div class="container-fluid">
+          <!-- Header -->
+          <div class="d-flex justify-content-between align-items-center mb-4">
+            <h1>
+              <i class="bi bi-graph-up text-netflix-red"></i> Chiffre d'Affaires
+              des Publicités
+            </h1>
+            <a
+              th:href="@{/admin/statistiques/ca-seances}"
+              class="btn btn-outline-secondary"
+            >
+              <i class="bi bi-calendar-event"></i> CA par Séance
+            </a>
+          </div>
+
+          <!-- Filtres -->
+          <div class="card mb-4">
+            <div class="card-body">
+              <h5 class="card-title mb-3">
+                <i class="bi bi-funnel"></i> Filtres
+              </h5>
+              <form
+                th:action="@{/admin/statistiques/ca-publicites}"
+                method="get"
+              >
+                <div class="row">
+                  <div class="col-md-3">
+                    <label for="societeId" class="form-label">Société</label>
+                    <select class="form-select" id="societeId" name="societeId">
+                      <option value="">Toutes les sociétés</option>
+                      <option
+                        th:each="societe : ${societes}"
+                        th:value="${societe.id}"
+                        th:text="${societe.nom}"
+                        th:selected="${societeId != null && societeId == societe.id}"
+                      ></option>
+                    </select>
+                  </div>
+
+                  <div class="col-md-3">
+                    <label for="seanceId" class="form-label">Séance</label>
+                    <select class="form-select" id="seanceId" name="seanceId">
+                      <option value="">Toutes les séances</option>
+                      <option
+                        th:each="seance : ${seances}"
+                        th:value="${seance.id}"
+                        th:text="${seance.film.titre + ' - ' + seance.heureDebut}"
+                        th:selected="${seanceId != null && seanceId == seance.id}"
+                      ></option>
+                    </select>
+                  </div>
+
+                  <div class="col-md-3">
+                    <label for="mois" class="form-label">Mois</label>
+                    <select class="form-select" id="mois" name="mois">
+                      <option value="">--</option>
+                      <option
+                        value="1"
+                        th:selected="${mois != null && mois == 1}"
+                      >
+                        Janvier
+                      </option>
+                      <option
+                        value="2"
+                        th:selected="${mois != null && mois == 2}"
+                      >
+                        Février
+                      </option>
+                      <option
+                        value="3"
+                        th:selected="${mois != null && mois == 3}"
+                      >
+                        Mars
+                      </option>
+                      <option
+                        value="4"
+                        th:selected="${mois != null && mois == 4}"
+                      >
+                        Avril
+                      </option>
+                      <option
+                        value="5"
+                        th:selected="${mois != null && mois == 5}"
+                      >
+                        Mai
+                      </option>
+                      <option
+                        value="6"
+                        th:selected="${mois != null && mois == 6}"
+                      >
+                        Juin
+                      </option>
+                      <option
+                        value="7"
+                        th:selected="${mois != null && mois == 7}"
+                      >
+                        Juillet
+                      </option>
+                      <option
+                        value="8"
+                        th:selected="${mois != null && mois == 8}"
+                      >
+                        Août
+                      </option>
+                      <option
+                        value="9"
+                        th:selected="${mois != null && mois == 9}"
+                      >
+                        Septembre
+                      </option>
+                      <option
+                        value="10"
+                        th:selected="${mois != null && mois == 10}"
+                      >
+                        Octobre
+                      </option>
+                      <option
+                        value="11"
+                        th:selected="${mois != null && mois == 11}"
+                      >
+                        Novembre
+                      </option>
+                      <option
+                        value="12"
+                        th:selected="${mois != null && mois == 12}"
+                      >
+                        Décembre
+                      </option>
+                    </select>
+                  </div>
+
+                  <div class="col-md-3">
+                    <label for="annee" class="form-label">Année</label>
+                    <input
+                      type="number"
+                      class="form-control"
+                      id="annee"
+                      name="annee"
+                      th:value="${annee}"
+                      placeholder="2025"
+                    />
+                  </div>
+                </div>
+
+                <div class="row mt-3">
+                  <div class="col-md-3">
+                    <label for="dateDebut" class="form-label">Date début</label>
+                    <input
+                      type="date"
+                      class="form-control"
+                      id="dateDebut"
+                      name="dateDebut"
+                      th:value="${dateDebut}"
+                    />
+                  </div>
+
+                  <div class="col-md-3">
+                    <label for="dateFin" class="form-label">Date fin</label>
+                    <input
+                      type="date"
+                      class="form-control"
+                      id="dateFin"
+                      name="dateFin"
+                      th:value="${dateFin}"
+                    />
+                  </div>
+                  <div class="col-md-3">
+                    <label class="form-label">&nbsp;</label>
+                    <button type="submit" class="btn btn-netflix w-100">
+                      <i class="bi bi-search"></i> Rechercher
+                    </button>
+                  </div>
+                  <div class="col-md-3">
+                    <label class="form-label">&nbsp;</label>
+                    <a
+                      th:href="@{/admin/statistiques}"
+                      class="btn btn-outline-secondary w-100"
+                    >
+                      <i class="bi bi-arrow-clockwise"></i> Réinitialiser
+                    </a>
+                  </div>
+                </div>
+              </form>
+            </div>
+          </div>
+
+          <!-- Résultats -->
+          <div th:if="${statistiques != null}">
+            <!-- KPIs -->
+            <div class="row mb-4">
+              <div class="col-md-3">
+                <div class="card text-white bg-success">
+                  <div class="card-body">
+                    <h5 class="card-title">
+                      <i class="bi bi-currency-exchange"></i> CA Total
+                    </h5>
+                    <h2
+                      class="mb-0"
+                      th:text="${#numbers.formatDecimal(statistiques.caTotal, 0, 'COMMA', 2, 'POINT')} + ' Ar'"
+                    ></h2>
+                  </div>
+                </div>
+              </div>
+              <div class="col-md-3">
+                <div class="card text-white bg-primary">
+                  <div class="card-body">
+                    <h5 class="card-title">
+                      <i class="bi bi-cash-stack"></i> Montant Payé
+                    </h5>
+                    <h2
+                      class="mb-0"
+                      th:text="${#numbers.formatDecimal(statistiques.totalPaiements, 0, 'COMMA', 2, 'POINT')} + ' Ar'"
+                    ></h2>
+                  </div>
+                </div>
+              </div>
+              <div class="col-md-3">
+                <div class="card text-white bg-warning">
+                  <div class="card-body">
+                    <h5 class="card-title">
+                      <i class="bi bi-exclamation-triangle"></i> Reste à Payer
+                    </h5>
+                    <h2
+                      class="mb-0"
+                      th:text="${#numbers.formatDecimal(statistiques.totalResteAPayer, 0, 'COMMA', 2, 'POINT')} + ' Ar'"
+                    ></h2>
+                  </div>
+                </div>
+              </div>
+              <div class="col-md-3">
+                <div class="card text-white bg-info">
+                  <div class="card-body">
+                    <h5 class="card-title">
+                      <i class="bi bi-megaphone"></i> Nombre de Publicités
+                    </h5>
+                    <h2
+                      class="mb-0"
+                      th:text="${statistiques.nombrePublicites}"
+                    ></h2>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Graphiques -->
+            <div class="row mb-4">
+              <div class="col-md-6">
+                <div class="card">
+                  <div class="card-body">
+                    <h5 class="card-title">CA par Société</h5>
+                    <canvas id="chartSociete"></canvas>
+                  </div>
+                </div>
+              </div>
+              <div class="col-md-6">
+                <div class="card">
+                  <div class="card-body">
+                    <h5 class="card-title">Évolution CA par Mois</h5>
+                    <canvas id="chartMois"></canvas>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Tableau récapitulatif par société -->
+            <div class="card mb-4">
+              <div class="card-body">
+                <h5 class="card-title mb-3">Récapitulatif par Société</h5>
+                <div class="table-responsive">
+                  <table class="table table-hover">
+                    <thead>
+                      <tr>
+                        <th>Société</th>
+                        <th class="text-end">CA Total (Ar)</th>
+                        <th class="text-end">Montant Payé (Ar)</th>
+                        <th class="text-end">Reste à Payer (Ar)</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <tr th:each="entry : ${statistiques.caBySociete}">
+                        <td><strong th:text="${entry.key}"></strong></td>
+                        <td
+                          class="text-end"
+                          th:text="${#numbers.formatDecimal(entry.value, 0, 'COMMA', 2, 'POINT')} + ' Ar'"
+                        ></td>
+                        <td
+                          class="text-end text-primary fw-bold"
+                          th:text="${#numbers.formatDecimal(statistiques.paiementsBySociete[entry.key] ?: 0, 0, 'COMMA', 2, 'POINT')} + ' Ar'"
+                        ></td>
+                        <td
+                          class="text-end fw-bold"
+                          th:classappend="${statistiques.resteAPayerBySociete[entry.key] > 0 ? 'text-warning' : 'text-success'}"
+                          th:text="${#numbers.formatDecimal(statistiques.resteAPayerBySociete[entry.key] ?: 0, 0, 'COMMA', 2, 'POINT')} + ' Ar'"
+                        ></td>
+                      </tr>
+                    </tbody>
+                    <tfoot>
+                      <tr class="table-active">
+                        <th>TOTAL</th>
+                        <th
+                          class="text-end"
+                          th:text="${#numbers.formatDecimal(statistiques.caTotal, 0, 'COMMA', 2, 'POINT')} + ' Ar'"
+                        ></th>
+                        <th
+                          class="text-end text-primary"
+                          th:text="${#numbers.formatDecimal(statistiques.totalPaiements, 0, 'COMMA', 2, 'POINT')} + ' Ar'"
+                        ></th>
+                        <th
+                          class="text-end"
+                          th:classappend="${statistiques.totalResteAPayer > 0 ? 'text-warning' : 'text-success'}"
+                          th:text="${#numbers.formatDecimal(statistiques.totalResteAPayer, 0, 'COMMA', 2, 'POINT')} + ' Ar'"
+                        ></th>
+                      </tr>
+                    </tfoot>
+                  </table>
+                </div>
+              </div>
+            </div>
+
+            <!-- Tableau détaillé -->
+            <div class="card">
+              <div class="card-body">
+                <h5 class="card-title mb-3">Détails des Publicités</h5>
+                <div class="table-responsive">
+                  <table class="table table-hover">
+                    <thead>
+                      <tr>
+                        <th>ID</th>
+                        <th>Société</th>
+                        <th>Séance</th>
+                        <th>Longueur (min)</th>
+                        <th>Nombre</th>
+                        <th>Date</th>
+                        <th class="text-end">CA (Ar)</th>
+                        <th class="text-end">Montant Payé (Ar)</th>
+                        <th class="text-end">Reste à Payer (Ar)</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <tr th:each="detail : ${statistiques.details}">
+                        <td th:text="${detail.id}"></td>
+                        <td th:text="${detail.societe}"></td>
+                        <td th:text="${detail.seance}"></td>
+                        <td th:text="${detail.longueur}"></td>
+                        <td th:text="${detail.nombre}"></td>
+                        <td
+                          th:text="${#temporals.format(detail.date, 'dd/MM/yyyy')}"
+                        ></td>
+                        <td
+                          class="text-end fw-bold"
+                          th:text="${#numbers.formatDecimal(detail.ca, 0, 'COMMA', 2, 'POINT')} + ' Ar'"
+                        ></td>
+                        <td
+                          class="text-end text-success"
+                          th:text="${#numbers.formatDecimal(detail.montantPaye ?: 0, 0, 'COMMA', 2, 'POINT')} + ' Ar'"
+                        ></td>
+                        <td
+                          class="text-end"
+                          th:classappend="${detail.resteAPayer > 0 ? 'text-warning fw-bold' : 'text-success'}"
+                          th:text="${#numbers.formatDecimal(detail.resteAPayer ?: 0, 0, 'COMMA', 2, 'POINT')} + ' Ar'"
+                        ></td>
+                      </tr>
+                    </tbody>
+                    <tfoot>
+                      <tr class="table-active">
+                        <th colspan="6" class="text-end">TOTAL:</th>
+                        <th
+                          class="text-end"
+                          th:text="${#numbers.formatDecimal(statistiques.caTotal, 0, 'COMMA', 2, 'POINT')} + ' Ar'"
+                        ></th>
+                        <th
+                          class="text-end text-success"
+                          th:text="${#numbers.formatDecimal(statistiques.totalPaiements, 0, 'COMMA', 2, 'POINT')} + ' Ar'"
+                        ></th>
+                        <th
+                          class="text-end text-warning"
+                          th:text="${#numbers.formatDecimal(statistiques.totalResteAPayer, 0, 'COMMA', 2, 'POINT')} + ' Ar'"
+                        ></th>
+                      </tr>
+                    </tfoot>
+                  </table>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div th:if="${statistiques == null}" class="alert alert-info">
+            <i class="bi bi-info-circle"></i> Utilisez les filtres ci-dessus
+            pour générer les statistiques.
+          </div>
+        </div>
+      </main>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script th:if="${statistiques != null}">
+      // Données pour le graphique par société
+      const societeLabels = [
+        <th:block th:each="entry, iterStat : ${statistiques.caBySociete}">
+          <th:block th:text="'&quot;' + ${entry.key} + '&quot;'"></th:block>
+          <th:block th:if="${!iterStat.last}">,</th:block>
+        </th:block>,
+      ];
+
+      const societeData = [
+        <th:block th:each="entry, iterStat : ${statistiques.caBySociete}">
+          <th:block th:text="${entry.value}"></th:block>
+          <th:block th:if="${!iterStat.last}">,</th:block>
+        </th:block>,
+      ];
+
+      if (societeLabels.length > 0 && societeData.length > 0) {
+        const ctxSociete = document
+          .getElementById("chartSociete")
+          .getContext("2d");
+        new Chart(ctxSociete, {
+          type: "pie",
+          data: {
+            labels: societeLabels,
+            datasets: [
+              {
+                label: "CA par Société (Ar)",
+                data: societeData,
+                backgroundColor: [
+                  "#E50914",
+                  "#831010",
+                  "#F5A623",
+                  "#4A90E2",
+                  "#7ED321",
+                  "#BD10E0",
+                  "#9013FE",
+                  "#50E3C2",
+                  "#B8E986",
+                  "#F8E71C",
+                ],
+              },
+            ],
+          },
+          options: {
+            responsive: true,
+            plugins: {
+              legend: {
+                position: "bottom",
+              },
+              tooltip: {
+                callbacks: {
+                  label: function (context) {
+                    return (
+                      context.label +
+                      ": " +
+                      context.parsed.toLocaleString("fr-FR", {
+                        minimumFractionDigits: 2,
+                      }) +
+                      " Ar"
+                    );
+                  },
+                },
+              },
+            },
+          },
+        });
+      }
+
+      // Données pour le graphique par mois
+      const moisLabels = [
+        <th:block th:each="entry, iterStat : ${statistiques.caByMois}">
+          <th:block th:text="'&quot;' + ${entry.key} + '&quot;'"></th:block>
+          <th:block th:if="${!iterStat.last}">,</th:block>
+        </th:block>,
+      ];
+
+      const moisData = [
+        <th:block th:each="entry, iterStat : ${statistiques.caByMois}">
+          <th:block th:text="${entry.value}"></th:block>
+          <th:block th:if="${!iterStat.last}">,</th:block>
+        </th:block>,
+      ];
+
+      if (moisLabels.length > 0 && moisData.length > 0) {
+        const ctxMois = document.getElementById("chartMois").getContext("2d");
+        new Chart(ctxMois, {
+          type: "bar",
+          data: {
+            labels: moisLabels,
+            datasets: [
+              {
+                label: "CA par Mois (Ar)",
+                data: moisData,
+                backgroundColor: "#E50914",
+                borderColor: "#831010",
+                borderWidth: 1,
+              },
+            ],
+          },
+          options: {
+            responsive: true,
+            scales: {
+              y: {
+                beginAtZero: true,
+                ticks: {
+                  callback: function (value) {
+                    return value.toLocaleString("fr-FR") + " Ar";
+                  },
+                },
+              },
+            },
+            plugins: {
+              legend: {
+                display: false,
+              },
+              tooltip: {
+                callbacks: {
+                  label: function (context) {
+                    return (
+                      "CA: " +
+                      context.parsed.y.toLocaleString("fr-FR", {
+                        minimumFractionDigits: 2,
+                      }) +
+                      " Ar"
+                    );
+                  },
+                },
+              },
+            },
+          },
+        });
+      }
+    </script>
+  </body>
+</html>

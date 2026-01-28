@@ -38,6 +38,28 @@
                     <i class="bi bi-calendar-event"></i>
                     <span>Séances</span>
                 </a>
+                <a th:href="@{/admin/tarifs}" class="nav-link">
+                    <i class="bi bi-currency-dollar"></i>
+                    <span>Tarifs</span>
+                </a>
+                <a th:href="@{/admin/types-personne}" class="nav-link">
+                    <i class="bi bi-people"></i>
+                    <span>Types de Personne</span>
+                </a>
+                <a th:href="@{/admin/societes}" class="nav-link">
+                    <i class="bi bi-building"></i>
+                    <span>Sociétés</span>
+                </a>
+                <a th:href="@{/admin/publicites}" class="nav-link">
+                    <i class="bi bi-megaphone"></i>
+                    <span>Publicités</span>
+                </a>                <a th:href="@{/admin/paiements}" class="nav-link">
+                    <i class="bi bi-cash-coin"></i>
+                    <span>Paiements</span>
+                </a>                <a th:href="@{/admin/statistiques}" class="nav-link">
+                    <i class="bi bi-graph-up"></i>
+                    <span>Statistiques</span>
+                </a>
             </nav>
         </nav>
 
@@ -100,6 +122,12 @@
                                     </td>
                                     <td>
                                         <div class="btn-group" role="group">
+                                            <button type="button" 
+                                                    class="btn btn-sm btn-outline-info" 
+                                                    title="Voir les billets"
+                                                    onclick="showBillets(${seance.id})">
+                                                <i class="bi bi-ticket-detailed"></i>
+                                            </button>
                                             <a th:href="@{/admin/seances/edit/{id}(id=${seance.id})}" 
                                                class="btn btn-sm btn-outline-primary" 
                                                title="Modifier la séance">
@@ -128,7 +156,103 @@
         </main>
     </div>
 
+    <!-- Modal pour afficher les billets -->
+    <div class="modal fade" id="billetsModal" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title"><i class="bi bi-ticket-detailed me-2"></i>Liste des billets</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div id="billetsLoading" class="text-center py-4">
+                        <div class="spinner-border text-primary" role="status">
+                            <span class="visually-hidden">Chargement...</span>
+                        </div>
+                    </div>
+                    <div id="billetsContent" style="display: none;">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Client</th>
+                                    <th>Type Personne</th>
+                                    <th>Siège</th>
+                                    <th>Type Siège</th>
+                                    <th>Prix</th>
+                                </tr>
+                            </thead>
+                            <tbody id="billetsTableBody">
+                            </tbody>
+                        </table>
+                        <div id="billetsEmpty" class="text-center text-muted py-4" style="display: none;">
+                            <i class="bi bi-inbox fs-1 d-block mb-2"></i>
+                            Aucun billet vendu pour cette séance
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <div class="me-auto">
+                        <strong>Total: <span id="totalBillets" class="text-success">0 Ar</span></strong>
+                    </div>
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fermer</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
     <script th:src="@{/js/admin.js}"></script>
+    <script>
+        function showBillets(seanceId) {
+            const modal = new bootstrap.Modal(document.getElementById('billetsModal'));
+            const loading = document.getElementById('billetsLoading');
+            const content = document.getElementById('billetsContent');
+            const tableBody = document.getElementById('billetsTableBody');
+            const empty = document.getElementById('billetsEmpty');
+            const totalElement = document.getElementById('totalBillets');
+            
+            // Show loading
+            loading.style.display = 'block';
+            content.style.display = 'none';
+            modal.show();
+            
+            // Fetch billets
+            fetch(`/admin/seances/${seanceId}/billets`)
+                .then(response => response.json())
+                .then(data => {
+                    loading.style.display = 'none';
+                    content.style.display = 'block';
+                    
+                    if (data.length === 0) {
+                        empty.style.display = 'block';
+                        tableBody.innerHTML = '';
+                        totalElement.textContent = '0 Ar';
+                    } else {
+                        empty.style.display = 'none';
+                        let total = 0;
+                        tableBody.innerHTML = data.map(billet => {
+                            total += billet.prix || 0;
+                            return `
+                                <tr>
+                                    <td>${billet.nomClient || '-'}</td>
+                                    <td><span class="badge bg-secondary">${billet.typePersonne || '-'}</span></td>
+                                    <td>${billet.siege || '-'}</td>
+                                    <td><span class="badge bg-info">${billet.typeSiege || '-'}</span></td>
+                                    <td><strong class="text-success">${billet.prix ? billet.prix.toLocaleString('fr-FR') : 0} Ar</strong></td>
+                                </tr>
+                            `;
+                        }).join('');
+                        totalElement.textContent = total.toLocaleString('fr-FR') + ' Ar';
+                    }
+                })
+                .catch(error => {
+                    console.error('Erreur:', error);
+                    loading.style.display = 'none';
+                    content.style.display = 'block';
+                    empty.style.display = 'block';
+                    tableBody.innerHTML = '';
+                });
+        }
+    </script>
 </body>
 </html>

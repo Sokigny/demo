@@ -58,4 +58,7 @@ public interface SeanceRepository extends JpaRepository<Seance, Integer> {
     
     // Trouver les prochaines séances à partir d'une date
     List<Seance> findByDateSeanceGreaterThanEqualOrderByDateSeanceAscHeureDebutAsc(LocalDate date);
+    
+    // Trouver les séances entre deux dates
+    List<Seance> findByDateSeanceBetween(LocalDate dateDebut, LocalDate dateFin);
 }

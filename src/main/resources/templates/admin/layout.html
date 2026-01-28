@@ -46,8 +46,25 @@
                 <a href="#" class="list-group-item list-group-item-action bg-dark text-light">
                     <i class="bi bi-ticket-perforated me-2"></i>Réservations
                 </a>
-                <a href="#" class="list-group-item list-group-item-action bg-dark text-light">
-                    <i class="bi bi-people me-2"></i>Clients
+                <a th:href="@{/admin/tarifs}" 
+                   class="list-group-item list-group-item-action bg-dark text-light"
+                   th:classappend="${#strings.contains(#httpServletRequest.requestURI, '/tarifs')} ? 'active' : ''">
+                    <i class="bi bi-currency-dollar me-2"></i>Tarifs
+                </a>
+                <a th:href="@{/admin/types-personne}" 
+                   class="list-group-item list-group-item-action bg-dark text-light"
+                   th:classappend="${#strings.contains(#httpServletRequest.requestURI, '/types-personne')} ? 'active' : ''">
+                    <i class="bi bi-people me-2"></i>Types de Personne
+                </a>
+                <a th:href="@{/admin/societes}" 
+                   class="list-group-item list-group-item-action bg-dark text-light"
+                   th:classappend="${#strings.contains(#httpServletRequest.requestURI, '/societes')} ? 'active' : ''">
+                    <i class="bi bi-building me-2"></i>Sociétés
+                </a>
+                <a th:href="@{/admin/publicites}" 
+                   class="list-group-item list-group-item-action bg-dark text-light"
+                   th:classappend="${#strings.contains(#httpServletRequest.requestURI, '/publicites')} ? 'active' : ''">
+                    <i class="bi bi-megaphone me-2"></i>Publicités
                 </a>
                 <a href="#" class="list-group-item list-group-item-action bg-dark text-light">
                     <i class="bi bi-graph-up me-2"></i>Statistiques

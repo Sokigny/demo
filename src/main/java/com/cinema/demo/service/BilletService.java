@@ -1,16 +1,17 @@
 package com.cinema.demo.service;
 
-import com.cinema.demo.model.Billet;
-import com.cinema.demo.model.Reservation;
-import com.cinema.demo.model.Seance;
-import com.cinema.demo.model.Siege;
+import com.cinema.demo.model.*;
 import com.cinema.demo.repository.BilletRepository;
+import com.cinema.demo.repository.ClientRepository;
 import com.cinema.demo.repository.ReservationRepository;
 import com.cinema.demo.repository.SeanceRepository;
 import com.cinema.demo.repository.SiegeRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.sql.Date;
+import java.time.LocalDate;
+import java.time.ZoneId;
 import java.util.List;
 import java.util.Optional;
 
@@ -28,6 +29,15 @@ public class BilletService {
     
     @Autowired
     private SeanceRepository seanceRepository;
+    
+    @Autowired
+    private ClientRepository clientRepository;
+    
+    @Autowired
+    private TypePersonneService typePersonneService;
+    
+    @Autowired
+    private TarifService tarifService;
     
     // Create
     public Billet createBillet(Billet billet) {
@@ -92,6 +102,62 @@ public class BilletService {
     // Read - par séance et siège
     public List<Billet> getBilletsBySeanceIdAndSiegeId(Integer seanceId, Integer siegeId) {
         return billetRepository.findBySeanceIdAndSiegeId(seanceId, siegeId);
+    }
+    
+    // Calculer le prix du billet selon le client et le siège
+    public Integer calculerPrixBillet(Client client, Siege siege) {
+        if (client == null || client.getDateNaissance() == null) {
+            throw new RuntimeException("Le client doit avoir une date de naissance");
+        }
+        
+        if (siege == null || siege.getTypeSiege() == null) {
+            throw new RuntimeException("Le siège doit avoir un type de siège");
+        }
+        
+        // Convertir LocalDate en Date
+        java.util.Date dateNaissance = Date.from(client.getDateNaissance().atStartOfDay(ZoneId.systemDefault()).toInstant());
+        
+        // Trouver le type de personne selon la date de naissance
+        Optional<TypePersonne> typePersonneOpt = typePersonneService.getTypeDePersonne(dateNaissance);
+        if (!typePersonneOpt.isPresent()) {
+            throw new RuntimeException("Aucun type de personne trouvé pour l'âge du client");
+        }
+        
+        TypePersonne typePersonne = typePersonneOpt.get();
+        TypeSiege typeSiege = siege.getTypeSiege();
+        
+        // Trouver le tarif correspondant
+        Optional<Tarif> tarifOpt = tarifService.getTarif(typePersonne, typeSiege);
+        if (!tarifOpt.isPresent()) {
+            throw new RuntimeException("Aucun tarif trouvé pour le type de personne '" + typePersonne.getNom() + 
+                                     "' et le type de siège '" + typeSiege.getNom() + "'");
+        }
+        
+        Tarif tarif = tarifOpt.get();
+        
+        // Utiliser getMontant() qui gère automatiquement le pourcentage
+        return tarif.getMontant();
+    }
+    
+    // Créer un billet avec calcul automatique du prix
+    public Billet createBilletAvecPrix(Integer reservationId, Integer clientId, Integer siegeId, Integer seanceId, Integer statut) {
+        Reservation reservation = reservationRepository.findById(reservationId)
+                .orElseThrow(() -> new RuntimeException("Réservation non trouvée avec l'id: " + reservationId));
+        
+        Client client = clientRepository.findById(clientId)
+                .orElseThrow(() -> new RuntimeException("Client non trouvé avec l'id: " + clientId));
+        
+        Siege siege = siegeRepository.findById(siegeId)
+                .orElseThrow(() -> new RuntimeException("Siège non trouvé avec l'id: " + siegeId));
+        
+        Seance seance = seanceRepository.findById(seanceId)
+                .orElseThrow(() -> new RuntimeException("Séance non trouvée avec l'id: " + seanceId));
+        
+        // Calculer le prix automatiquement
+        Integer prix = calculerPrixBillet(client, siege);
+        
+        Billet billet = new Billet(reservation, siege, seance, client, prix, statut);
+        return billetRepository.save(billet);
     }
     
     // Update

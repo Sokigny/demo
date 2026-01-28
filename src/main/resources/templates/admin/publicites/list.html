@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="fr" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gestion des Publicités - Cinema Admin</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+    <link rel="stylesheet" th:href="@{/css/admin.css}">
+</head>
+<body>
+    <div class="">
+        <!-- Sidebar -->
+        <nav class="sidebar">
+            <div class="sidebar-header">
+                <div class="sidebar-brand">
+                    <i class="bi bi-film"></i>
+                    <span>Cinema Admin</span>
+                </div>
+                <button class="sidebar-toggle">
+                    <i class="bi bi-list"></i>
+                </button>
+            </div>
+            <nav>
+                <a th:href="@{/admin/dashboard}" class="nav-link">
+                    <i class="bi bi-speedometer2"></i>
+                    <span>Dashboard</span>
+                </a>
+                <a th:href="@{/admin/films}" class="nav-link">
+                    <i class="bi bi-camera-reels"></i>
+                    <span>Films</span>
+                </a>
+                <a th:href="@{/admin/salles}" class="nav-link">
+                    <i class="bi bi-building"></i>
+                    <span>Salles</span>
+                </a>
+                <a th:href="@{/admin/seances}" class="nav-link">
+                    <i class="bi bi-calendar-event"></i>
+                    <span>Séances</span>
+                </a>
+                <a th:href="@{/admin/tarifs}" class="nav-link">
+                    <i class="bi bi-currency-dollar"></i>
+                    <span>Tarifs</span>
+                </a>
+                <a th:href="@{/admin/types-personne}" class="nav-link">
+                    <i class="bi bi-people"></i>
+                    <span>Types de Personne</span>
+                </a>
+                <a th:href="@{/admin/societes}" class="nav-link">
+                    <i class="bi bi-building"></i>
+                    <span>Sociétés</span>
+                </a>
+                <a th:href="@{/admin/publicites}" class="nav-link active">
+                    <i class="bi bi-megaphone"></i>
+                    <span>Publicités</span>
+                </a>                <a th:href="@{/admin/paiements}" class="nav-link">
+                    <i class="bi bi-cash-coin"></i>
+                    <span>Paiements</span>
+                </a>                <a th:href="@{/admin/statistiques}" class="nav-link">
+                    <i class="bi bi-graph-up"></i>
+                    <span>Statistiques</span>
+                </a>
+            </nav>
+        </nav>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <div class="container-fluid">
+                <!-- Flash Messages -->
+                <div th:if="${message}" class="alert alert-success alert-dismissible fade show" role="alert">
+                    <i class="bi bi-check-circle me-2"></i>
+                    <span th:text="${message}"></span>
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+
+                <!-- Header -->
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <h1><i class="bi bi-megaphone text-netflix-red"></i> Gestion des Publicités</h1>
+                    <a th:href="@{/admin/publicites/new}" class="btn btn-netflix">
+                        <i class="bi bi-plus-lg me-2"></i>Nouvelle Publicité
+                    </a>
+                </div>
+
+                <!-- Table -->
+                <div class="card">
+                    <div class="card-body">
+                        <div class="table-responsive">
+                            <table class="table table-hover">
+                                <thead>
+                                    <tr>
+                                        <th>ID</th>
+                                        <th>Séance</th>
+                                        <th>Société</th>
+                                        <th>Longueur (min)</th>
+                                        <th>Nombre</th>
+                                        <th>Date</th>
+                                        <th class="text-end">Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr th:each="publicite : ${publicites}">
+                                        <td th:text="${publicite.id}"></td>
+                                        <td th:text="${publicite.seance != null ? publicite.seance.film.titre + ' - ' + publicite.seance.heureDebut : 'N/A'}"></td>
+                                        <td th:text="${publicite.societe != null ? publicite.societe.nom : 'N/A'}"></td>
+                                        <td th:text="${publicite.longueur} + ' min'"></td>
+                                        <td th:text="${publicite.nombre}"></td>
+                                        <td th:text="${#temporals.format(publicite.date, 'dd/MM/yyyy')}"></td>
+                                        <td class="text-end">
+                                            <a th:href="@{/admin/publicites/edit/{id}(id=${publicite.id})}" class="btn btn-sm btn-outline-warning me-2">
+                                                <i class="bi bi-pencil"></i> Modifier
+                                            </a>
+                                            <a th:href="@{/admin/publicites/delete/{id}(id=${publicite.id})}" 
+                                               class="btn btn-sm btn-outline-danger"
+                                               onclick="return confirm('Êtes-vous sûr de vouloir supprimer cette publicité ?')">
+                                                <i class="bi bi-trash"></i> Supprimer
+                                            </a>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

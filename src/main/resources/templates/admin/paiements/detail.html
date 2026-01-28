@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Détail du Paiement - Admin</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+    <link rel="stylesheet" th:href="@{/css/admin.css}">
+</head>
+<body>
+    <div class="">
+        <!-- Sidebar -->
+        <nav class="sidebar">
+            <div class="sidebar-header">
+                <div class="sidebar-brand">
+                    <i class="bi bi-film"></i>
+                    <span>Cinema Admin</span>
+                </div>
+                <button class="sidebar-toggle">
+                    <i class="bi bi-list"></i>
+                </button>
+            </div>
+            <nav>
+                <a th:href="@{/admin/dashboard}" class="nav-link">
+                    <i class="bi bi-speedometer2"></i>
+                    <span>Dashboard</span>
+                </a>
+                <a th:href="@{/admin/films}" class="nav-link">
+                    <i class="bi bi-camera-reels"></i>
+                    <span>Films</span>
+                </a>
+                <a th:href="@{/admin/salles}" class="nav-link">
+                    <i class="bi bi-building"></i>
+                    <span>Salles</span>
+                </a>
+                <a th:href="@{/admin/seances}" class="nav-link">
+                    <i class="bi bi-calendar-event"></i>
+                    <span>Séances</span>
+                </a>
+                <a th:href="@{/admin/tarifs}" class="nav-link">
+                    <i class="bi bi-currency-dollar"></i>
+                    <span>Tarifs</span>
+                </a>
+                <a th:href="@{/admin/types-personne}" class="nav-link">
+                    <i class="bi bi-people"></i>
+                    <span>Types de Personne</span>
+                </a>
+                <a th:href="@{/admin/societes}" class="nav-link">
+                    <i class="bi bi-building"></i>
+                    <span>Sociétés</span>
+                </a>
+                <a th:href="@{/admin/publicites}" class="nav-link">
+                    <i class="bi bi-badge-ad"></i>
+                    <span>Publicités</span>
+                </a>
+                <a th:href="@{/admin/paiements}" class="nav-link active">
+                    <i class="bi bi-cash-coin"></i>
+                    <span>Paiements</span>
+                </a>
+                <a th:href="@{/admin/statistiques}" class="nav-link">
+                    <i class="bi bi-graph-up"></i>
+                    <span>Statistiques</span>
+                </a>
+            </nav>
+        </nav>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <div class="container-fluid">
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <h1><i class="bi bi-receipt text-netflix-red"></i> Détail du Paiement</h1>
+                    <a th:href="@{/admin/paiements}" class="btn btn-secondary">
+                        <i class="bi bi-arrow-left"></i> Retour à la liste
+                    </a>
+                </div>
+
+                <!-- Info du paiement -->
+                <div class="card mb-4">
+                    <div class="card-header bg-primary text-white">
+                        <h5 class="mb-0"><i class="bi bi-info-circle"></i> Informations du Paiement</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-3">
+                                <strong>ID:</strong>
+                                <p th:text="${paiement.id}">1</p>
+                            </div>
+                            <div class="col-md-3">
+                                <strong>Société:</strong>
+                                <p th:text="${paiement.societe.nom}">Vaniala</p>
+                            </div>
+                            <div class="col-md-3">
+                                <strong>Montant Total:</strong>
+                                <p class="text-success">
+                                    <strong th:text="${#numbers.formatDecimal(paiement.montant, 0, 'COMMA', 2, 'POINT')} + ' Ar'">100,000.00 Ar</strong>
+                                </p>
+                            </div>
+                            <div class="col-md-3">
+                                <strong>Date:</strong>
+                                <p th:text="${#temporals.format(paiement.datePaiement, 'dd/MM/yyyy')}">23/01/2026</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Répartition par séance -->
+                <div class="card">
+                    <div class="card-header bg-info text-white">
+                        <h5 class="mb-0"><i class="bi bi-pie-chart"></i> Répartition par Séance</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="table-responsive">
+                            <table class="table table-hover">
+                                <thead class="table-dark">
+                                    <tr>
+                                        <th>Séance</th>
+                                        <th>Film</th>
+                                        <th>Date</th>
+                                        <th>Heure</th>
+                                        <th class="text-end">Montant Affecté</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr th:each="detail : ${details}">
+                                        <td th:text="${detail.seance.id}">1</td>
+                                        <td>
+                                            <strong th:text="${detail.seance.film.titre}">Avatar</strong>
+                                        </td>
+                                        <td th:text="${#temporals.format(detail.seance.dateSeance, 'dd/MM/yyyy')}">23/01/2026</td>
+                                        <td th:text="${detail.seance.heureDebut}">19:00</td>
+                                        <td class="text-end">
+                                            <strong class="text-success" 
+                                                    th:text="${#numbers.formatDecimal(detail.montant, 0, 'COMMA', 2, 'POINT')} + ' Ar'">
+                                                30,000.00 Ar
+                                            </strong>
+                                        </td>
+                                    </tr>
+                                    <tr th:if="${#lists.isEmpty(details)}">
+                                        <td colspan="5" class="text-center text-muted py-4">
+                                            <i class="bi bi-inbox fs-1 d-block mb-2"></i>
+                                            Aucun détail de répartition
+                                        </td>
+                                    </tr>
+                                </tbody>
+                                <tfoot class="table-secondary">
+                                    <tr>
+                                        <th colspan="4" class="text-end">TOTAL</th>
+                                        <th class="text-end">
+                                            <strong class="text-success">
+                                                <span th:text="${#numbers.formatDecimal(#aggregates.sum(details.![montant]), 0, 'COMMA', 2, 'POINT')} + ' Ar'">100,000.00 Ar</span>
+                                            </strong>
+                                        </th>
+                                    </tr>
+                                </tfoot>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Actions -->
+                <div class="mt-4">
+                    <a th:href="@{/admin/paiements/edit/{id}(id=${paiement.id})}" 
+                       class="btn btn-warning">
+                        <i class="bi bi-pencil"></i> Modifier
+                    </a>
+                    <a th:href="@{/admin/paiements/delete/{id}(id=${paiement.id})}" 
+                       class="btn btn-danger"
+                       onclick="return confirm('Êtes-vous sûr de vouloir supprimer ce paiement ?')">
+                        <i class="bi bi-trash"></i> Supprimer
+                    </a>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script th:src="@{/js/admin.js}"></script>
+</body>
+</html>

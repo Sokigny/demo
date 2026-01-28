@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="fr" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gestion des Types de Personne - Cinema Admin</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+    <link rel="stylesheet" th:href="@{/css/admin.css}">
+</head>
+<body>
+    <div class="">
+        <!-- Sidebar -->
+        <nav class="sidebar">
+            <div class="sidebar-header">
+                <div class="sidebar-brand">
+                    <i class="bi bi-film"></i>
+                    <span>Cinema Admin</span>
+                </div>
+                <button class="sidebar-toggle">
+                    <i class="bi bi-list"></i>
+                </button>
+            </div>
+            <nav>
+                <a th:href="@{/admin/dashboard}" class="nav-link">
+                    <i class="bi bi-speedometer2"></i>
+                    <span>Dashboard</span>
+                </a>
+                <a th:href="@{/admin/films}" class="nav-link">
+                    <i class="bi bi-camera-reels"></i>
+                    <span>Films</span>
+                </a>
+                <a th:href="@{/admin/salles}" class="nav-link">
+                    <i class="bi bi-building"></i>
+                    <span>Salles</span>
+                </a>
+                <a th:href="@{/admin/seances}" class="nav-link">
+                    <i class="bi bi-calendar-event"></i>
+                    <span>Séances</span>
+                </a>
+                <a th:href="@{/admin/tarifs}" class="nav-link">
+                    <i class="bi bi-currency-dollar"></i>
+                    <span>Tarifs</span>
+                </a>
+                <a th:href="@{/admin/types-personne}" class="nav-link active">
+                    <i class="bi bi-people"></i>
+                    <span>Types de Personne</span>
+                </a>
+                <a th:href="@{/admin/societes}" class="nav-link">
+                    <i class="bi bi-building"></i>
+                    <span>Sociétés</span>
+                </a>
+                <a th:href="@{/admin/publicites}" class="nav-link">
+                    <i class="bi bi-megaphone"></i>
+                    <span>Publicités</span>
+                </a>                <a th:href="@{/admin/paiements}" class="nav-link">
+                    <i class="bi bi-cash-coin"></i>
+                    <span>Paiements</span>
+                </a>                <a th:href="@{/admin/statistiques}" class="nav-link">
+                    <i class="bi bi-graph-up"></i>
+                    <span>Statistiques</span>
+                </a>
+            </nav>
+        </nav>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <div class="container-fluid">
+                <!-- Flash Messages -->
+                <div th:if="${success}" class="alert alert-success alert-dismissible fade show" role="alert">
+                    <i class="bi bi-check-circle me-2"></i>
+                    <span th:text="${success}"></span>
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+                
+                <div th:if="${error}" class="alert alert-danger alert-dismissible fade show" role="alert">
+                    <i class="bi bi-exclamation-triangle me-2"></i>
+                    <span th:text="${error}"></span>
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h1><i class="bi bi-people me-2"></i>Types de Personne</h1>
+            <a th:href="@{/admin/types-personne/new}" class="btn btn-danger">
+                <i class="bi bi-plus-circle me-1"></i>Nouveau Type
+            </a>
+        </div>
+
+        <div class="card shadow-sm">
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead class="table-dark">
+                            <tr>
+                                <th>ID</th>
+                                <th>Nom</th>
+                                <th>Âge Minimum</th>
+                                <th>Âge Maximum</th>
+                                <th>Tranche d'Âge</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr th:if="${typesPersonne.empty}">
+                                <td colspan="6" class="text-center text-muted">
+                                    <i class="bi bi-inbox fs-1 d-block mb-2"></i>
+                                    Aucun type de personne enregistré
+                                </td>
+                            </tr>
+                            <tr th:each="type : ${typesPersonne}">
+                                <td th:text="${type.id}">1</td>
+                                <td>
+                                    <strong th:text="${type.nom}">Adulte</strong>
+                                </td>
+                                <td th:text="${type.ageMin != null ? type.ageMin + ' ans' : '-'}">18 ans</td>
+                                <td th:text="${type.ageMax != null ? type.ageMax + ' ans' : '-'}">65 ans</td>
+                                <td>
+                                    <span th:if="${type.ageMin != null and type.ageMax != null}" 
+                                          class="badge bg-info">
+                                        <span th:text="${type.ageMin + ' - ' + type.ageMax + ' ans'}"></span>
+                                    </span>
+                                    <span th:if="${type.ageMin == null and type.ageMax == null}" 
+                                          class="text-muted">
+                                        Non défini
+                                    </span>
+                                </td>
+                                <td>
+                                    <div class="btn-group" role="group">
+                                        <a th:href="@{/admin/types-personne/edit/{id}(id=${type.id})}" 
+                                           class="btn btn-sm btn-outline-primary" 
+                                           title="Modifier">
+                                            <i class="bi bi-pencil"></i>
+                                        </a>
+                                        <a th:href="@{/admin/types-personne/delete/{id}(id=${type.id})}" 
+                                           class="btn btn-sm btn-outline-danger" 
+                                           title="Supprimer"
+                                           onclick="return confirm('Êtes-vous sûr de vouloir supprimer ce type de personne ?');">
+                                            <i class="bi bi-trash"></i>
+                                        </a>
+                                    </div>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+            </div>
+        </main>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script th:src="@{/js/admin.js}"></script>
+</body>
+</html>

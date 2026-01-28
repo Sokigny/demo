@@ -131,6 +131,7 @@ public class SeanceController {
         
         // Calculer les places disponibles pour chaque séance
         java.util.Map<Integer, java.util.Map<String, Integer>> availableSeatsMap = new java.util.HashMap<>();
+        java.util.Map<Integer, Integer> placesDisponiblesMap = new java.util.HashMap<>();
         java.util.Map<Integer, Integer> revenusMap = new java.util.HashMap<>();
         java.util.Map<Integer, Integer> revenusMaxMap = new java.util.HashMap<>();
         java.util.Map<Integer, Integer> capaciteMap = new java.util.HashMap<>();
@@ -142,6 +143,10 @@ public class SeanceController {
         for (Seance seance : seances) {
             java.util.Map<String, Integer> availableSeats = seanceService.getAvailableSeatsByType(seance.getId());
             availableSeatsMap.put(seance.getId(), availableSeats);
+            
+            // Calculate total available seats
+            int totalAvailable = availableSeats.values().stream().mapToInt(Integer::intValue).sum();
+            placesDisponiblesMap.put(seance.getId(), totalAvailable);
             
             int revenus = seanceService.getRevenusSeance(seance.getId());
             revenusMap.put(seance.getId(), revenus);
@@ -158,6 +163,7 @@ public class SeanceController {
         
         model.addAttribute("seances", seances);
         model.addAttribute("availableSeatsMap", availableSeatsMap);
+        model.addAttribute("placesDisponiblesMap", placesDisponiblesMap);
         model.addAttribute("revenusMap", revenusMap);
         model.addAttribute("revenusMaxMap", revenusMaxMap);
         model.addAttribute("capaciteMap", capaciteMap);
